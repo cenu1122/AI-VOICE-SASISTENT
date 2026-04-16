@@ -52,7 +52,7 @@
         </div>
     </div>
 
-    <script>
+   <script>
     const callBtn = document.getElementById('callBtn');
     const btnText = document.getElementById('btnText');
     const chatWindow = document.getElementById('chat-window');
@@ -78,19 +78,21 @@
     }
 
     async function pokreniAsistenta() {
-    // 1. Prekini bilo kakav prethodni govor odmah
-    window.speechSynthesis.cancel(); 
+        // 1. Prekini bilo kakav prethodni govor odmah
+        if (window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+        }
 
-    const tekstZaSlanje = userInput.value.trim();
-    
-    // Provjera da li je polje prazno ili je poziv već u toku
-    if (isCalling || !tekstZaSlanje) return;
-    
-    // UI Update
-    addMessageToChat('user', tekstZaSlanje);
-    userInput.value = ""; 
-    
-    isCalling = true;
+        const tekstZaSlanje = userInput.value.trim();
+        
+        // Provjera da li je polje prazno ili je poziv već u toku
+        if (isCalling || !tekstZaSlanje) return;
+        
+        // UI Update
+        addMessageToChat('user', tekstZaSlanje);
+        userInput.value = ""; 
+        
+        isCalling = true;
         status.innerText = "RAZMIŠLJAM...";
         callBtn.classList.add('pulse', 'opacity-50');
         btnText.innerText = "Warten...";
@@ -121,7 +123,6 @@
 
                 utterance.onend = () => resetUI();
                 synth.speak(utterance);
-                // ------------------------
             } else {
                 resetUI();
             }
@@ -142,10 +143,14 @@
         btnText.innerText = "Senden & Sprechen";
     }
 
-    callBtn.addEventListener('click', pokreniAsistenta);
-    userInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') pokreniAsistenta();
-    });
+    // Event listeneri moraju biti izvan funkcije pokreniAsistenta
+    callBtn.onclick = () => pokreniAsistenta();
+
+    userInput.onkeypress = (e) => {
+        if (e.key === 'Enter') {
+            pokreniAsistenta();
+        }
+    };
 </script>
 </body>
 </html>
