@@ -61,6 +61,27 @@
 
     let isCalling = false;
 
+    // --- NOVO: KONFIGURACIJA SLUŠANJA (MIKROFON) ---
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new Recognition();
+    recognition.lang = 'de-DE'; // Podesi na 'bs-BA' ako pričaš na našem
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    // Šta se dešava kada završiš sa pričanjem:
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        userInput.value = transcript; // Stavi ono što si rekao u polje
+        pokreniAsistenta(); // Automatski pošalji AI-u
+    };
+
+    recognition.onend = () => {
+        if (!isCalling) {
+            status.innerText = "BEREIT";
+            callBtn.classList.remove('bg-red-600', 'pulse');
+        }
+    };
+
     function addMessageToChat(role, text) {
         const msgDiv = document.createElement('div');
         msgDiv.className = role === 'user' ? "flex justify-end mb-2" : "flex justify-start mb-2";
@@ -78,17 +99,11 @@
     }
 
     async function pokreniAsistenta() {
-        // 1. Prekini bilo kakav prethodni govor odmah
-        if (window.speechSynthesis) {
-            window.speechSynthesis.cancel();
-        }
+        window.speechSynthesis.cancel(); 
 
         const tekstZaSlanje = userInput.value.trim();
-        
-        // Provjera da li je polje prazno ili je poziv već u toku
         if (isCalling || !tekstZaSlanje) return;
         
-        // UI Update
         addMessageToChat('user', tekstZaSlanje);
         userInput.value = ""; 
         
@@ -104,8 +119,6 @@
                 body: JSON.stringify({ userText: tekstZaSlanje })
             });
 
-            if (!response.ok) throw new Error('Mrežna greška ili Supabase Error');
-
             const data = await response.json();
 
             if (data.tekst || data.reply) {
@@ -113,24 +126,15 @@
                 addMessageToChat('ai', odgovor);
                 status.innerText = "GOVORIM...";
 
-                // --- GOOGLE WEB VOICE ---
-                const synth = window.speechSynthesis;
                 const utterance = new SpeechSynthesisUtterance(odgovor);
-                
-                utterance.lang = 'de-DE'; // Njemački jezik
-                utterance.pitch = 1;
-                utterance.rate = 1;
-
+                utterance.lang = 'de-DE';
                 utterance.onend = () => resetUI();
-                synth.speak(utterance);
+                window.speechSynthesis.speak(utterance);
             } else {
                 resetUI();
             }
-
         } catch (err) {
-            console.error(err);
-            status.innerText = "GREŠKA: " + err.message;
-            status.classList.add('text-red-500');
+            status.innerText = "GREŠKA!";
             resetUI();
         }
     }
@@ -138,18 +142,21 @@
     function resetUI() {
         isCalling = false;
         status.innerText = "BEREIT";
-        status.classList.remove('text-red-500');
-        callBtn.classList.remove('pulse', 'opacity-50');
+        callBtn.classList.remove('pulse', 'opacity-50', 'bg-red-600');
         btnText.innerText = "Senden & Sprechen";
     }
 
-    // Event listeneri moraju biti izvan funkcije pokreniAsistenta
-    callBtn.onclick = () => pokreniAsistenta();
+    // IZMJENA: Klik na dugme sada aktivira mikrofon
+    callBtn.onclick = () => {
+        if (isCalling) return;
+        window.speechSynthesis.cancel();
+        status.innerText = "SLUŠAM...";
+        callBtn.classList.add('bg-red-600', 'pulse');
+        recognition.start(); // Pali mikrofon
+    };
 
     userInput.onkeypress = (e) => {
-        if (e.key === 'Enter') {
-            pokreniAsistenta();
-        }
+        if (e.key === 'Enter') pokreniAsistenta();
     };
 </script>
 </body>
