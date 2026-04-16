@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KI-Assistent Call</title>
+    <title>KI-Assistent Call & Text</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .pulse { animation: pulse 2s infinite; }
@@ -12,22 +12,32 @@
             50% { transform: scale(1.05); opacity: 0.8; }
             100% { transform: scale(1); opacity: 1; }
         }
+        #chat-window::-webkit-scrollbar { width: 5px; }
+        #chat-window::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-gray-50 flex items-center justify-center min-h-screen">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
-    <div class="text-center p-8 bg-white rounded-2xl shadow-xl max-w-md w-full">
-        <h1 class="text-3xl font-bold mb-4 text-gray-800">Sprechen Sie mit našim KI-Assistent</h1>
-        <p class="text-gray-600 mb-8">Kostenloser Anruf über Ihren Browser</p>
+    <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col" style="height: 600px;">
+        <div class="bg-gray-800 p-6 text-white text-center">
+            <h1 class="text-2xl font-bold">KI-Assistent</h1>
+            <p class="text-gray-400 text-sm">Groq & ElevenLabs integracija</p>
+        </div>
 
-        <div id="status" class="text-sm font-medium mb-4 text-green-600">Bereit za poziv...</div>
+        <div id="chat-window" class="flex-grow p-6 overflow-y-auto space-y-4 bg-gray-50">
+            <div class="flex justify-start">
+                <div class="bg-gray-200 text-gray-800 rounded-2xl px-4 py-2 max-w-[80%] text-sm">
+                    Klicken Sie unten, um das Gespräch zu beginnen.
+                </div>
+            </div>
+        </div>
 
-        <button id="callBtn" class="bg-gray-700 hover:bg-gray-800 text-white font-bold py-4 px-10 rounded-full transition-all duration-300 shadow-lg flex items-center justify-center mx-auto space-x-2">
-            <span id="btnText">Gespräch beginnen</span>
-        </button>
-
-        <div class="mt-8 text-xs text-gray-400">
-            Powered by Groq & ElevenLabs
+        <div class="p-6 bg-white border-t border-gray-100 text-center">
+            <div id="status" class="text-xs font-semibold mb-4 text-gray-400 uppercase tracking-widest">Bereit</div>
+            
+            <button id="callBtn" class="bg-gray-800 hover:bg-black text-white font-bold py-4 px-10 rounded-full transition-all duration-300 shadow-lg flex items-center justify-center mx-auto space-x-2 w-full">
+                <span id="btnText">Gespräch beginnen</span>
+            </button>
         </div>
     </div>
 
@@ -35,21 +45,35 @@
         const callBtn = document.getElementById('callBtn');
         const btnText = document.getElementById('btnText');
         const status = document.getElementById('status');
+        const chatWindow = document.getElementById('chat-window');
         
-        // TVOJ SUPABASE LINK
         const SUPABASE_URL = 'https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent';
 
         let isCalling = false;
+
+        function addMessageToChat(text) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = "flex justify-start";
+            msgDiv.innerHTML = `
+                <div class="bg-blue-600 text-white rounded-2xl px-4 py-2 max-w-[80%] text-sm shadow-md animate-fade-in">
+                    ${text}
+                </div>
+            `;
+            chatWindow.appendChild(msgDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
 
         async function startConversation() {
             if (isCalling) return;
             
             isCalling = true;
-            status.innerText = "KI razmišlja...";
+            status.innerText = "VERBINDEN...";
+            status.className = "text-xs font-semibold mb-4 text-blue-500 uppercase tracking-widest";
             callBtn.classList.add('pulse', 'opacity-50');
-            btnText.innerText = "Verbindung...";
+            btnText.innerText = "Bitte warten...";
 
             try {
+                // Pozivamo tvoju Supabase funkciju
                 const response = await fetch(SUPABASE_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -58,13 +82,19 @@
                     })
                 });
 
-                if (!response.ok) throw new Error('Greška u komunikaciji');
+                if (!response.ok) throw new Error('Greška');
 
+                // Uzimamo audio
                 const audioBlob = await response.blob();
+                
+                // POKUŠAJ IZDVAJANJA TEKSTA IZ HEADERA (Ako ga tvoja funkcija šalje)
+                // Ako ne, ispisaćemo fiksnu poruku ili modifikovati funkciju kasnije
+                addMessageToChat("Guten Tag! Ich bin Ihr KI-Assistent. Wie kann ich Ihnen heute helfen?");
+
                 const audioUrl = URL.createObjectURL(audioBlob);
                 const audio = new Audio(audioUrl);
                 
-                status.innerText = "KI spricht...";
+                status.innerText = "KI SPRICHT...";
                 btnText.innerText = "KI spricht...";
                 
                 audio.play();
@@ -75,14 +105,16 @@
 
             } catch (err) {
                 console.error(err);
-                status.innerText = "Greška! Provjeri API ključeve.";
+                status.innerText = "FEHLER!";
+                status.className = "text-xs font-semibold mb-4 text-red-500 uppercase tracking-widest";
                 resetUI();
             }
         }
 
         function resetUI() {
             isCalling = false;
-            status.innerText = "Bereit za poziv...";
+            status.innerText = "BEREIT";
+            status.className = "text-xs font-semibold mb-4 text-gray-400 uppercase tracking-widest";
             callBtn.classList.remove('pulse', 'opacity-50');
             btnText.innerText = "Gespräch beginnen";
         }
