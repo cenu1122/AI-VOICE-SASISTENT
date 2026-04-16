@@ -36,7 +36,7 @@
             <div id="status" class="text-xs font-semibold mb-4 text-gray-400 uppercase tracking-widest">Bereit</div>
             
             <button id="callBtn" class="bg-gray-800 hover:bg-black text-white font-bold py-4 px-10 rounded-full transition-all duration-300 shadow-lg flex items-center justify-center mx-auto space-x-2 w-full">
-                <span id="btnText">Gespräch beginnen</span>
+                <span id="btnText">Gesprćch beginnen</span>
             </button>
         </div>
     </div>
@@ -44,68 +44,62 @@
     <script>
         const callBtn = document.getElementById('callBtn');
         const btnText = document.getElementById('btnText');
-        const status = document.getElementById('status');
         const chatWindow = document.getElementById('chat-window');
-        
-        const SUPABASE_URL = 'https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent';
+        const status = document.getElementById('status');
 
         let isCalling = false;
 
         function addMessageToChat(text) {
             const msgDiv = document.createElement('div');
-            msgDiv.className = "flex justify-start";
+            msgDiv.className = "flex justify-start mb-2";
             msgDiv.innerHTML = `
-                <div class="bg-blue-600 text-white rounded-2xl px-4 py-2 max-w-[80%] text-sm shadow-md animate-fade-in">
-                    ${text}
+                <div class="bg-blue-600 text-white p-3 rounded-lg shadow-md text-sm animate-fade-in">
+                    AI kaže: ${text}
                 </div>
             `;
             chatWindow.appendChild(msgDiv);
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
 
-        async function startConversation() {
+        async function pokreniAsistenta() {
             if (isCalling) return;
             
             isCalling = true;
-            status.innerText = "VERBINDEN...";
-            status.className = "text-xs font-semibold mb-4 text-blue-500 uppercase tracking-widest";
+            status.innerText = "RAZMIŠLJAM (Groq poziv)...";
             callBtn.classList.add('pulse', 'opacity-50');
             btnText.innerText = "Bitte warten...";
 
             try {
-                // Pozivamo tvoju Supabase funkciju
-                const response = await fetch(SUPABASE_URL, {
+                const response = await fetch('https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        userText: "Guten Tag! Ich bin Ihr KI-Assistent. Wie kann ich Ihnen heute helfen?" 
-                    })
+                    body: JSON.stringify({ userText: "Guten Tag! Wer bist du?" })
                 });
 
-                if (!response.ok) throw new Error('Greška');
+                if (!response.ok) throw new Error('Mrežna greška ili Supabase Error');
 
-                // Uzimamo audio
-                const audioBlob = await response.blob();
-                
-                // POKUŠAJ IZDVAJANJA TEKSTA IZ HEADERA (Ako ga tvoja funkcija šalje)
-                // Ako ne, ispisaćemo fiksnu poruku ili modifikovati funkciju kasnije
-                addMessageToChat("Guten Tag! Ich bin Ihr KI-Assistent. Wie kann ich Ihnen heute helfen?");
+                const data = await response.json();
 
-                const audioUrl = URL.createObjectURL(audioBlob);
-                const audio = new Audio(audioUrl);
-                
-                status.innerText = "KI SPRICHT...";
-                btnText.innerText = "KI spricht...";
-                
-                audio.play();
+                // 1. ISPIS TEKSTA
+                if (data.tekst) {
+                    addMessageToChat(data.tekst);
+                    status.innerText = "GROQ ODGOVORIO!";
+                }
 
-                audio.onended = () => {
+                // 2. PUŠTANJE ZVUKA
+                if (data.audio) {
+                    const audio = new Audio("data:audio/mpeg;base64," + data.audio);
+                    audio.play();
+                    status.innerText = "ZVUK PUŠTEN";
+                    
+                    audio.onended = () => resetUI();
+                } else {
                     resetUI();
-                };
+                }
 
             } catch (err) {
                 console.error(err);
-                status.innerText = "FEHLER!";
+                status.innerText = "GREŠKA: " + err.message;
                 status.className = "text-xs font-semibold mb-4 text-red-500 uppercase tracking-widest";
                 resetUI();
             }
@@ -114,12 +108,11 @@
         function resetUI() {
             isCalling = false;
             status.innerText = "BEREIT";
-            status.className = "text-xs font-semibold mb-4 text-gray-400 uppercase tracking-widest";
             callBtn.classList.remove('pulse', 'opacity-50');
-            btnText.innerText = "Gespräch beginnen";
+            btnText.innerText = "Gesprćch beginnen";
         }
 
-        callBtn.addEventListener('click', startConversation);
+        callBtn.addEventListener('click', pokreniAsistenta);
     </script>
 </body>
 </html>
