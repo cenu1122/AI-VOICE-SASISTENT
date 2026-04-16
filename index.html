@@ -78,6 +78,10 @@
     }
 
     async function pokreniAsistenta() {
+        async function pokreniAsistenta() {
+    window.speechSynthesis.cancel(); // DODAJ OVO - prekida stari govor čim klikneš opet
+    const tekstZaSlanje = userInput.value.trim();
+    // ... ostatak koda
         const tekstZaSlanje = userInput.value.trim();
         if (isCalling || !tekstZaSlanje) return;
         
