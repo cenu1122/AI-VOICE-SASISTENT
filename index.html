@@ -14,6 +14,8 @@
         }
         #chat-window::-webkit-scrollbar { width: 5px; }
         #chat-window::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .animate-fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
@@ -36,7 +38,7 @@
             <div id="status" class="text-xs font-semibold mb-4 text-gray-400 uppercase tracking-widest">Bereit</div>
             
             <button id="callBtn" class="bg-gray-800 hover:bg-black text-white font-bold py-4 px-10 rounded-full transition-all duration-300 shadow-lg flex items-center justify-center mx-auto space-x-2 w-full">
-                <span id="btnText">Gesprćch beginnen</span>
+                <span id="btnText">Gespräch beginnen</span>
             </button>
         </div>
     </div>
@@ -72,6 +74,7 @@
             try {
                 const response = await fetch('https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent', {
                     method: 'POST',
+                    mode: 'cors', // Dodano za sigurnost komunikacije
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userText: "Guten Tag! Wer bist du?" })
                 });
@@ -80,18 +83,15 @@
 
                 const data = await response.json();
 
-                // 1. ISPIS TEKSTA
                 if (data.tekst) {
                     addMessageToChat(data.tekst);
                     status.innerText = "GROQ ODGOVORIO!";
                 }
 
-                // 2. PUŠTANJE ZVUKA
                 if (data.audio) {
                     const audio = new Audio("data:audio/mpeg;base64," + data.audio);
                     audio.play();
                     status.innerText = "ZVUK PUŠTEN";
-                    
                     audio.onended = () => resetUI();
                 } else {
                     resetUI();
@@ -108,8 +108,9 @@
         function resetUI() {
             isCalling = false;
             status.innerText = "BEREIT";
+            status.className = "text-xs font-semibold mb-4 text-gray-400 uppercase tracking-widest";
             callBtn.classList.remove('pulse', 'opacity-50');
-            btnText.innerText = "Gesprćch beginnen";
+            btnText.innerText = "Gespräch beginnen";
         }
 
         callBtn.addEventListener('click', pokreniAsistenta);
