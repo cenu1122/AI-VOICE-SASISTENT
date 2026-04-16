@@ -1,77 +1,51 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
-<meta charset="UTF-8">
-<title>Balkan Translator PRO</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<style>
-body {
-    background: #0f172a;
-    color: white;
-    font-family: Arial;
-    text-align: center;
-    padding: 20px;
-}
-h1 { color: #22c55e; }
-
-textarea {
-    width: 90%;
-    height: 120px;
-    margin: 10px;
-    border-radius: 15px;
-    padding: 10px;
-    font-size: 16px;
-}
-
-button {
-    padding: 12px;
-    margin: 5px;
-    border-radius: 12px;
-    border: none;
-    background: #22c55e;
-    color: white;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KI-Assistent Call</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background-color: #f4f4f9; margin: 0; }
+        .call-container { text-align: center; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        button { background-color: #007bff; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 50px; cursor: pointer; transition: 0.3s; }
+        button:hover { background-color: #0056b3; }
+        .status { margin-top: 15px; color: #555; }
+    </style>
 </head>
-
 <body>
 
-<h1>🌍 Balkan Translator PRO</h1>
+    <div class="call-container">
+        <h1>Sprechen Sie mit unserem KI-Assistenten</h1>
+        <p>Kostenloser Anruf über Ihren Browser</p>
+        <button id="start-call">Gespräch beginnen</button>
+        <p id="status" class="status">Bereit za poziv...</p>
+    </div>
 
-<button onclick="swap()">🔄 Zamijeni</button>
-<button onclick="speak()">🔊 Izgovori</button>
+    <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/vapi.browser.js"></script>
+    
+    <script>
+        const vapi = new Vapi('TVOJ_PUBLIC_KEY_IZ_VAPI_DASHBOARDA');
+        const assistantId = 'TVOJ_ASSISTANT_ID_IZ_VAPI_DASHBOARDA';
+        
+        const btn = document.getElementById('start-call');
+        const status = document.getElementById('status');
 
-<textarea id="input" placeholder="Unesi tekst..."></textarea>
+        btn.addEventListener('click', () => {
+            status.innerText = "Verbindung wird hergestellt...";
+            vapi.start(assistantId);
+        });
 
-<button onclick="translate()">Prevedi</button>
+        vapi.on('call-start', () => {
+            status.innerText = "Anruf läuft... Sprechen Sie jetzt.";
+            btn.style.backgroundColor = "#dc3545";
+            btn.innerText = "Auflegen";
+        });
 
-<textarea id="output" placeholder="Rezultat..." readonly></textarea>
-
-<script>
-let source="de";
-let target="bs";
-
-function swap(){
-    [source,target]=[target,source];
-    alert("Jezici zamijenjeni!");
-}
-
-async function translate(){
-    let text=document.getElementById("input").value;
-
-    let res=await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${source}&tl=${target}&dt=t&q=${encodeURIComponent(text)}`);
-    let data=await res.json();
-
-    document.getElementById("output").value=data[0].map(x=>x[0]).join("");
-}
-
-function speak(){
-    let msg=new SpeechSynthesisUtterance(document.getElementById("output").value);
-    msg.lang=target==="de"?"de-DE":"bs-BA";
-    speechSynthesis.speak(msg);
-}
-</script>
-
+        vapi.on('call-end', () => {
+            status.innerText = "Anruf beendet.";
+            btn.style.backgroundColor = "#007bff";
+            btn.innerText = "Gespräch beginnen";
+        });
+    </script>
 </body>
 </html>
