@@ -53,97 +53,93 @@
     </div>
 
     <script>
-        const callBtn = document.getElementById('callBtn');
-        const btnText = document.getElementById('btnText');
-        const chatWindow = document.getElementById('chat-window');
-        const status = document.getElementById('status');
-        const userInput = document.getElementById('userInput');
+    const callBtn = document.getElementById('callBtn');
+    const btnText = document.getElementById('btnText');
+    const chatWindow = document.getElementById('chat-window');
+    const status = document.getElementById('status');
+    const userInput = document.getElementById('userInput');
 
-        let isCalling = false;
+    let isCalling = false;
 
-        // Funkcija za dodavanje poruka u prozor (i tvojih i AI)
-        function addMessageToChat(role, text) {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = role === 'user' ? "flex justify-end mb-2" : "flex justify-start mb-2";
-            
-            const bgColor = role === 'user' ? "bg-gray-800 text-white" : "bg-blue-600 text-white";
-            const label = role === 'user' ? "Vi" : "AI";
+    function addMessageToChat(role, text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = role === 'user' ? "flex justify-end mb-2" : "flex justify-start mb-2";
+        const bgColor = role === 'user' ? "bg-gray-800 text-white" : "bg-blue-600 text-white";
+        const label = role === 'user' ? "Vi" : "AI";
 
-            msgDiv.innerHTML = `
-                <div class="${bgColor} p-3 rounded-2xl shadow-md text-sm animate-fade-in max-w-[85%]">
-                    <span class="block text-[10px] opacity-70 mb-1">${label}</span>
-                    ${text}
-                </div>
-            `;
-            chatWindow.appendChild(msgDiv);
-            chatWindow.scrollTop = chatWindow.scrollHeight;
-        }
+        msgDiv.innerHTML = `
+            <div class="${bgColor} p-3 rounded-2xl shadow-md text-sm animate-fade-in max-w-[85%]">
+                <span class="block text-[10px] opacity-70 mb-1">${label}</span>
+                ${text}
+            </div>
+        `;
+        chatWindow.appendChild(msgDiv);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
 
-        async function pokreniAsistenta() {
-            const tekstZaSlanje = userInput.value.trim();
-            if (isCalling || !tekstZaSlanje) return;
-            
-            // UI Update: Korisnik šalje poruku
-            addMessageToChat('user', tekstZaSlanje);
-            userInput.value = ""; // Briše polje
-            
-            isCalling = true;
-            status.innerText = "RAZMIŠLJAM...";
-            callBtn.classList.add('pulse', 'opacity-50');
-            btnText.innerText = "Warten...";
+    async function pokreniAsistenta() {
+        const tekstZaSlanje = userInput.value.trim();
+        if (isCalling || !tekstZaSlanje) return;
+        
+        addMessageToChat('user', tekstZaSlanje);
+        userInput.value = ""; 
+        
+        isCalling = true;
+        status.innerText = "RAZMIŠLJAM...";
+        callBtn.classList.add('pulse', 'opacity-50');
+        btnText.innerText = "Warten...";
 
-            try {
-                const response = await fetch('https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userText: tekstZaSlanje })
-                });
+        try {
+            const response = await fetch('https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userText: tekstZaSlanje })
+            });
 
-                if (!response.ok) throw new Error('Mrežna greška ili Supabase Error');
+            if (!response.ok) throw new Error('Mrežna greška ili Supabase Error');
 
-                const data = await response.json();
+            const data = await response.json();
 
-                // AI Odgovor u tekstualnom obliku
-                if (data.tekst || data.reply) {
-                    addMessageToChat('ai', data.tekst || data.reply);
-                    status.innerText = "ODGOVOR PRIMLJEN!";
-                }
+            if (data.tekst || data.reply) {
+                const odgovor = data.tekst || data.reply;
+                addMessageToChat('ai', odgovor);
+                status.innerText = "GOVORIM...";
 
-                // AI Odgovor u audio obliku
-                if (data.audio) {
-                    const audio = new Audio("data:audio/mpeg;base64," + data.audio);
-                    status.innerText = "REPRODUKCIJA GLASA...";
-                    await audio.play();
-                    audio.onended = () => resetUI();
-                } else {
-                    resetUI();
-                }
+                // --- GOOGLE WEB VOICE ---
+                const synth = window.speechSynthesis;
+                const utterance = new SpeechSynthesisUtterance(odgovor);
+                
+                utterance.lang = 'de-DE'; // Njemački jezik
+                utterance.pitch = 1;
+                utterance.rate = 1;
 
-            } catch (err) {
-                console.error(err);
-                status.innerText = "GREŠKA: " + err.message;
-                status.classList.add('text-red-500');
+                utterance.onend = () => resetUI();
+                synth.speak(utterance);
+                // ------------------------
+            } else {
                 resetUI();
             }
+
+        } catch (err) {
+            console.error(err);
+            status.innerText = "GREŠKA: " + err.message;
+            status.classList.add('text-red-500');
+            resetUI();
         }
+    }
 
-        function resetUI() {
-            isCalling = false;
-            status.innerText = "BEREIT";
-            status.classList.remove('text-red-500');
-            callBtn.classList.remove('pulse', 'opacity-50');
-            btnText.innerText = "Senden & Sprechen";
-        }
+    function resetUI() {
+        isCalling = false;
+        status.innerText = "BEREIT";
+        status.classList.remove('text-red-500');
+        callBtn.classList.remove('pulse', 'opacity-50');
+        btnText.innerText = "Senden & Sprechen";
+    }
 
-        // Event listener za klik
-        callBtn.addEventListener('click', pokreniAsistenta);
-
-        // Event listener za Enter tipku
-        userInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                pokreniAsistenta();
-            }
-        });
-    </script>
+    callBtn.addEventListener('click', pokreniAsistenta);
+    userInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') pokreniAsistenta();
+    });
+</script>
 </body>
 </html>
