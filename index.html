@@ -120,20 +120,42 @@
     });
 
     // GLASOVNO DUGME
-    callBtn.onclick = () => {
-        if (!recognition) return alert("Koristite Chrome za glas.");
-        if (!isCalling) {
-            isCalling = true;
-            status.innerText = "Slušam...";
-            callBtn.innerText = "STOP";
-            recognition.start();
-        } else {
-            isCalling = false;
-            status.innerText = "Spreman";
-            callBtn.innerText = "POKRENI GLASOVNO";
-            recognition.stop();
+    // Koristimo 'click' jer pokriva i mobitele i desktop bolje nego onclick
+callBtn.addEventListener('click', function() {
+    // Inicijalizacija audio konteksta (bitno za iOS/Android)
+    if (window.AudioContext || window.webkitAudioContext) {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
         }
-    };
+    }
+
+    if (!recognition) {
+        alert("Pretraživač ne podržava glas.");
+        return;
+    }
+
+    if (!isCalling) {
+        isCalling = true;
+        status.innerText = "Slušam...";
+        callBtn.style.background = "#ef4444";
+        callBtn.innerText = "STOP";
+        
+        // Na mobitelu recognition zna puknuti ako se ne pokrene unutar click eventa
+        try {
+            recognition.start();
+        } catch(e) {
+            console.log("Recognition već radi");
+        }
+    } else {
+        isCalling = false;
+        status.innerText = "Spreman";
+        callBtn.style.background = "#1e293b";
+        callBtn.innerText = "POKRENI GLASOVNO";
+        recognition.stop();
+        if (currentAudio) currentAudio.pause();
+    }
+});
 </script>
 </body>
 </html>
