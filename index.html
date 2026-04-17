@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="bs">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,11 +13,9 @@
         .user { background: #1e293b; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
         .ai { background: #2563eb; color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
         .input-area { padding: 20px; background: white; border-top: 1px solid #e2e8f0; }
-        input { width: 100%; padding: 14px; border: 2px solid #f1f5f9; border-radius: 12px; box-sizing: border-box; margin-bottom: 12px; outline: none; transition: border 0.3s; }
-        input:focus { border-color: #2563eb; }
-        button { width: 100%; padding: 16px; background: #1e293b; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:active { transform: scale(0.98); }
-        #status { font-size: 10px; text-align: center; color: #94a3b8; padding: 8px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; }
+        input { width: 100%; padding: 14px; border: 2px solid #f1f5f9; border-radius: 12px; box-sizing: border-box; margin-bottom: 12px; outline: none; }
+        button { width: 100%; padding: 16px; background: #1e293b; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        #status { font-size: 10px; text-align: center; color: #94a3b8; padding: 8px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -25,13 +23,13 @@
 <div class="app-container">
     <div class="header">
         <h3 style="margin:0">NH AI-Automation</h3>
-        <small style="opacity: 0.7">Voice Barge-in Demo</small>
+        <small style="opacity: 0.7">Nusret Halilović AI</small>
     </div>
     <div id="chat-window"></div>
-    <div id="status">Bereit</div>
+    <div id="status">Spreman</div>
     <div class="input-area">
-        <input type="text" id="userInput" placeholder="Schreiben oder sprechen..." autocomplete="off">
-        <button id="callBtn">STARTEN / STOPPEN</button>
+        <input type="text" id="userInput" placeholder="Piši ili pričaj..." autocomplete="off">
+        <button id="callBtn">POKRENI ASISTENTA</button>
     </div>
 </div>
 
@@ -42,20 +40,21 @@
     const status = document.getElementById('status');
 
     let isCalling = false;
+    let currentAudio = null; // Za ElevenLabs zvuk
 
-    // --- AUDIO CONTEXT ZA DETEKCIJU GLASA (BARGE-IN) ---
+    // Prepoznavanje glasa (podešeno na naš jezik radi bolje detekcije prekidanja)
     const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new Recognition();
-    recognition.lang = 'de-DE';
+    recognition.lang = 'hr-BA'; 
     recognition.continuous = true;
     recognition.interimResults = true;
 
     recognition.onresult = (event) => {
-        // KLJUČNA LOGIKA: Ako detektujemo bilo kakav rezultat dok AI priča -> ugasi AI
-        if (window.speechSynthesis.speaking) {
-            console.log("Detektovan glas - Prekidam AI");
-            window.speechSynthesis.cancel();
-            status.innerText = "Listening (Interrupted)...";
+        // Ako AI priča, a ti progovoriš -> Ugasi zvuk odmah (Barge-in)
+        if (currentAudio && !currentAudio.paused) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+            status.innerText = "Slušam (Prekinuto)...";
         }
 
         const transcript = event.results[event.results.length - 1][0].transcript;
@@ -70,17 +69,12 @@
         const tekst = userInput.value.trim();
         if (!tekst) return;
 
-        window.speechSynthesis.cancel(); 
-        
-        // Dodaj poruku u chat
-        const div = document.createElement('div');
-        div.className = 'msg user';
-        div.innerText = tekst;
-        chatWindow.appendChild(div);
-        userInput.value = "";
-        chatWindow.scrollTop = chatWindow.scrollHeight;
+        // Zaustavi prethodni govor ako postoji
+        if (currentAudio) currentAudio.pause();
 
-        status.innerText = "Thinking...";
+        dodajPoruku(tekst, 'user');
+        userInput.value = "";
+        status.innerText = "Razmišljam...";
 
         try {
             const res = await fetch('https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent', {
@@ -89,36 +83,40 @@
                 body: JSON.stringify({ userText: tekst })
             });
             const data = await res.json();
-            const odgovor = data.tekst || data.reply;
 
-            if (odgovor) {
-                prikaziIOdgovori(odgovor);
+            if (data.tekst) {
+                dodajPoruku(data.tekst, 'ai');
+                if (data.audio) {
+                    pustiElevenLabsAudio(data.audio);
+                }
             }
         } catch (e) {
-            status.innerText = "Error!";
+            status.innerText = "Greška u konekciji!";
+            console.error(e);
         }
     }
 
-    function prikaziIOdgovori(odgovor) {
-        const aiDiv = document.createElement('div');
-        aiDiv.className = 'msg ai';
-        aiDiv.innerText = odgovor;
-        chatWindow.appendChild(aiDiv);
+    function dodajPoruku(tekst, pošiljalac) {
+        const div = document.createElement('div');
+        div.className = `msg ${pošiljalac}`;
+        div.innerText = tekst;
+        chatWindow.appendChild(div);
         chatWindow.scrollTop = chatWindow.scrollHeight;
-        
-        const utt = new SpeechSynthesisUtterance(odgovor);
-        
-        // Detekcija jezika
-        const balkan = /[čćšžđ]|(hvala|dobro|šta|kako)/i;
-        utt.lang = balkan.test(odgovor) ? 'bs-BA' : 'de-DE';
-        
-        utt.onstart = () => { status.innerText = "AI Speaking..."; };
-        utt.onend = () => { if(isCalling) status.innerText = "Listening..."; else status.innerText = "Bereit"; };
-        
-        window.speechSynthesis.speak(utt);
     }
 
-    // ENTER TASTER FIX
+    function pustiElevenLabsAudio(base64Audio) {
+        if (currentAudio) currentAudio.pause();
+        
+        status.innerText = "AI priča...";
+        currentAudio = new Audio("data:audio/mpeg;base64," + base64Audio);
+        currentAudio.play();
+        
+        currentAudio.onended = () => {
+            status.innerText = isCalling ? "Slušam..." : "Spreman";
+        };
+    }
+
+    // FIX ZA ENTER
     userInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -129,17 +127,17 @@
     callBtn.onclick = () => {
         if (!isCalling) {
             isCalling = true;
-            status.innerText = "Listening...";
+            status.innerText = "Slušam...";
             callBtn.style.background = "#ef4444";
-            callBtn.innerText = "STOPPEN";
+            callBtn.innerText = "ZAUSTAVI";
             recognition.start();
         } else {
             isCalling = false;
-            status.innerText = "Bereit";
+            status.innerText = "Spreman";
             callBtn.style.background = "#1e293b";
-            callBtn.innerText = "STARTEN / STOPPEN";
+            callBtn.innerText = "POKRENI ASISTENTA";
             recognition.stop();
-            window.speechSynthesis.cancel();
+            if (currentAudio) currentAudio.pause();
         }
     };
 </script>
