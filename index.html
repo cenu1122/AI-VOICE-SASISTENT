@@ -1,9 +1,14 @@
+Evo kompletnog, pročišćenog koda koji ujedinjuje sve što smo dogovorili: prekidanje priče čim progovoriš, automatsku detekciju jezika (njemački/naš), te ispravan rad Enter tastera.
+
+Samo kopiraj sve i zamijeni svoj trenutni fajl:
+HTML
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KI-Assistent Call & Text</title>
+    <title>KI-Assistent Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .pulse { animation: pulse 2s infinite; }
@@ -42,7 +47,7 @@
             <div class="flex flex-col space-y-3">
                 <input type="text" id="userInput" 
                     class="w-full p-4 bg-gray-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all" 
-                    placeholder="Schreiben Sie nešto..." 
+                    placeholder="Schreiben Sie etwas..." 
                     autocomplete="off">
                 
                 <button id="callBtn" class="bg-gray-800 hover:bg-black text-white font-bold py-4 rounded-2xl transition-all duration-300 shadow-lg flex items-center justify-center space-x-2 w-full">
@@ -61,27 +66,27 @@
 
     let isCalling = false;
     let isAITalking = false;
+    let currentUtterance = null;
 
-    // --- KONFIGURACIJA SLUŠANJA SA PREKIDANJEM ---
+    // --- KONFIGURACIJA GOVORA (STT) ---
     const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new Recognition();
     recognition.lang = 'de-DE'; 
-    recognition.continuous = true; // Sluša stalno
-    recognition.interimResults = true; // Detektuje glas čim počneš pričati
+    recognition.continuous = true; 
+    recognition.interimResults = true;
 
     recognition.onresult = (event) => {
-        // Ako AI priča, a ti počneš pričati, odmah gasi AI zvuk
-        if (isAITalking) {
+        // PREKIDANJE: Ako AI priča, a ti progovoriš, odmah ga ušutkaj
+        if (window.speechSynthesis.speaking) {
             window.speechSynthesis.cancel();
             isAITalking = false;
-            status.innerText = "PREKIDANJE...";
+            status.innerText = "HÖRE ZU...";
         }
 
         const result = event.results[event.results.length - 1];
         if (result.isFinal) {
-            const transcript = result[0].transcript;
-            userInput.value = transcript;
-            pokreniAsistenta(); // Šalje AI-u novi input
+            userInput.value = result[0].transcript;
+            pokreniAsistenta(); 
         }
     };
 
@@ -104,22 +109,21 @@
     async function pokreniAsistenta() {
         const tekstZaSlanje = userInput.value.trim();
         if (!tekstZaSlanje) return;
+
+        // Zaustavi bilo kakav prethodni govor
+        window.speechSynthesis.cancel();
         
         addMessageToChat('user', tekstZaSlanje);
         userInput.value = ""; 
         
-        isCalling = true;
-        status.innerText = "RAZMIŠLJAM...";
+        status.innerText = "DENKE NACH...";
+        callBtn.classList.add('opacity-50');
 
         try {
             const response = await fetch('https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    userText: tekstZaSlanje,
-                    // Šaljemo AI-u instrukciju da skonta da li je ovo nastavak ili novo pitanje
-                    context: "Handle interruption. Decice whether to continue previous point or answer new question."
-                })
+                body: JSON.stringify({ userText: tekstZaSlanje })
             });
 
             const data = await response.json();
@@ -130,35 +134,40 @@
                 govori(odgovor);
             }
         } catch (err) {
-            status.innerText = "GREŠKA!";
-            resetUI();
+            console.error(err);
+            status.innerText = "FEHLER!";
+        } finally {
+            callBtn.classList.remove('opacity-50');
         }
     }
 
     function govori(tekst) {
+        window.speechSynthesis.cancel(); // Osiguranje da ne priča preko drugog glasa
         isAITalking = true;
-        status.innerText = "AI GOVORI...";
+        status.innerText = "AI SPRICHT...";
         
-        const utterance = new SpeechSynthesisUtterance(tekst);
-        utterance.lang = 'de-DE';
+        currentUtterance = new SpeechSynthesisUtterance(tekst);
+
+        // DETEKCIJA JEZIKA: Naš ili Njemački
+        const balkanPattern = /[čćšžđ]|(hvala|dobro|šta|kako|sam|jesi|da|ne)/i;
+        currentUtterance.lang = balkanPattern.test(tekst) ? 'bs-BA' : 'de-DE';
         
-        utterance.onend = () => {
+        currentUtterance.onend = () => {
             isAITalking = false;
-            if (isCalling) status.innerText = "SLUŠAM (AKTIVNO)...";
+            status.innerText = isCalling ? "HÖRE ZU (AKTIV)..." : "BEREIT";
         };
 
-        window.speechSynthesis.speak(utterance);
+        window.speechSynthesis.speak(currentUtterance);
     }
 
     callBtn.onclick = () => {
         if (!isCalling) {
             isCalling = true;
-            status.innerText = "SLUŠAM...";
+            status.innerText = "HÖRE ZU...";
             callBtn.classList.add('bg-red-600', 'pulse');
-            btnText.innerText = "Aktivna veza";
-            recognition.start(); // Pali mikrofon i ne gasi ga
+            btnText.innerText = "Verbindung Aktiv";
+            recognition.start();
         } else {
-            // Isključi sve
             isCalling = false;
             recognition.stop();
             window.speechSynthesis.cancel();
@@ -170,9 +179,17 @@
         isCalling = false;
         isAITalking = false;
         status.innerText = "BEREIT";
-        callBtn.classList.remove('pulse', 'bg-red-600');
+        callBtn.classList.remove('pulse', 'bg-red-600', 'opacity-50');
         btnText.innerText = "Senden & Sprechen";
     }
+
+    // ENTER TASTER POPRAVKA
+    userInput.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            pokreniAsistenta();
+        }
+    };
 </script>
 </body>
 </html>
