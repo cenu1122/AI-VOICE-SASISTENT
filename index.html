@@ -40,36 +40,39 @@
     const status = document.getElementById('status');
 
     let isCalling = false;
-    let currentAudio = null; // Za ElevenLabs zvuk
+    let currentAudio = null; 
+    let recognition = null; // Definišemo ga kao prazno na početku
 
-    // Prepoznavanje glasa (podešeno na naš jezik radi bolje detekcije prekidanja)
-    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new Recognition();
-    recognition.lang = 'hr-BA'; 
-    recognition.continuous = true;
-    recognition.interimResults = true;
+    // --- POPRAVLJENI DIO: Sigurno pokretanje prepoznavanja ---
+    try {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.lang = 'hr-BA'; 
+            recognition.continuous = true;
+            recognition.interimResults = true;
 
-    recognition.onresult = (event) => {
-        // Ako AI priča, a ti progovoriš -> Ugasi zvuk odmah (Barge-in)
-        if (currentAudio && !currentAudio.paused) {
-            currentAudio.pause();
-            currentAudio.currentTime = 0;
-            status.innerText = "Slušam (Prekinuto)...";
+            recognition.onresult = (event) => {
+                if (currentAudio && !currentAudio.paused) {
+                    currentAudio.pause();
+                    currentAudio.currentTime = 0;
+                    status.innerText = "Slušam (Prekinuto)...";
+                }
+                const transcript = event.results[event.results.length - 1][0].transcript;
+                userInput.value = transcript;
+                if (event.results[event.results.length - 1].isFinal) {
+                    posalji();
+                }
+            };
         }
-
-        const transcript = event.results[event.results.length - 1][0].transcript;
-        userInput.value = transcript;
-
-        if (event.results[event.results.length - 1].isFinal) {
-            posalji();
-        }
-    };
+    } catch (e) {
+        console.log("Glasovno prepoznavanje nije podržano u ovom browseru.");
+    }
 
     async function posalji() {
         const tekst = userInput.value.trim();
         if (!tekst) return;
 
-        // Zaustavi prethodni govor ako postoji
         if (currentAudio) currentAudio.pause();
 
         dodajPoruku(tekst, 'user');
@@ -106,17 +109,15 @@
 
     function pustiElevenLabsAudio(base64Audio) {
         if (currentAudio) currentAudio.pause();
-        
         status.innerText = "AI priča...";
         currentAudio = new Audio("data:audio/mpeg;base64," + base64Audio);
         currentAudio.play();
-        
         currentAudio.onended = () => {
             status.innerText = isCalling ? "Slušam..." : "Spreman";
         };
     }
 
-    // FIX ZA ENTER
+    // --- OVO SADA RADI JER NEMA GREŠKE IZNAD ---
     userInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -125,6 +126,10 @@
     });
 
     callBtn.onclick = () => {
+        if (!recognition) {
+            alert("Glasovno prepoznavanje nije podržano u ovom pretraživaču. Koristite Chrome.");
+            return;
+        }
         if (!isCalling) {
             isCalling = true;
             status.innerText = "Slušam...";
