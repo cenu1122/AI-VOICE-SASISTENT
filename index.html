@@ -37,7 +37,6 @@
 </div>
 
 <script>
-    // --- OVDJE STAVI SVOJ URL ---
     const URL_FUNKCIJE = 'https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent'; 
 
     const chatWindow = document.getElementById('chat-window');
@@ -49,7 +48,6 @@
     let currentAudio = null;
     let isCalling = false;
 
-    // Funkcija za prikaz poruka
     function addMsg(text, type) {
         const div = document.createElement('div');
         div.className = 'msg ' + type;
@@ -58,12 +56,10 @@
         chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 
-    // GLAVNA FUNKCIJA
     async function posalji(tekstManual) {
         const tekst = tekstManual || userInput.value.trim();
         if (!tekst) return;
 
-        console.log("Šaljem poruku:", tekst);
         addMsg(tekst, 'user');
         userInput.value = "";
         status.innerText = "Razmišljam...";
@@ -75,16 +71,14 @@
                 body: JSON.stringify({ userText: tekst })
             });
 
-            console.log("Status odgovora:", res.status);
             const data = await res.json();
-            console.log("Podaci stigli:", data);
 
             if (data.tekst) {
                 addMsg(data.tekst, 'ai');
                 if (data.audio) {
                     if (currentAudio) currentAudio.pause();
                     currentAudio = new Audio("data:audio/mpeg;base64," + data.audio);
-                    currentAudio.play().catch(e => console.log("Audio block:", e));
+                    currentAudio.play().catch(e => console.error("Audio error:", e));
                 }
             }
             status.innerText = "Spreman";
@@ -94,40 +88,50 @@
         }
     }
 
-    // ENTER Taster
     userInput.onkeydown = (e) => { if(e.key === 'Enter') posalji(); };
     sendBtn.onclick = () => posalji();
 
-    // GLASOVNO
+    // GLASOVNO PREPOZNAVANJE - Očišćena verzija
     try {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) throw new Error("Browser ne podržava SpeechRecognition");
+
         const rec = new SpeechRecognition();
         rec.lang = 'bs-BA';
+        rec.continuous = false;
+        rec.interimResults = false;
+
         rec.onresult = (e) => {
-            const tr = e.results[e.results.length - 1][0].transcript;
-            if (e.results[e.results.length - 1].isFinal) {
-                console.log("Glas završen:", tr);
-                posalji(tr);
-            }
+            const tr = e.results[0][0].transcript;
+            console.log("Glas prepoznat:", tr);
+            posalji(tr);
+        };
+
+        rec.onend = () => {
+            isCalling = false;
+            callBtn.innerText = "POKRENI GLASOVNO";
+            callBtn.style.background = "#1e293b";
+            if(status.innerText === "Slušam...") status.innerText = "Spreman";
         };
 
         callBtn.onclick = () => {
             if (!isCalling) {
-                rec.start();
-                isCalling = true;
-                callBtn.innerText = "STOP";
-                callBtn.style.background = "red";
-                status.innerText = "Slušam...";
+                if (currentAudio) currentAudio.pause();
+                try {
+                    rec.start();
+                    isCalling = true;
+                    callBtn.innerText = "SLUŠAM...";
+                    callBtn.style.background = "red";
+                    status.innerText = "Slušam...";
+                } catch (e) { console.error("Start error:", e); }
             } else {
                 rec.stop();
-                isCalling = false;
-                callBtn.innerText = "POKRENI GLASOVNO";
-                callBtn.style.background = "#1e293b";
-                status.innerText = "Spreman";
             }
         };
-    } catch(e) { console.log("SR nije podržan"); }
-
+    } catch(e) { 
+        console.log("SR Error:", e);
+        status.innerText = "Glas nije podržan.";
+    }
 </script>
 </body>
 </html>
