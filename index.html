@@ -47,7 +47,9 @@
     let currentAudio = null;
     let recognition = null;
 
-    // --- GLASOVNI DIO (SAD JE U TRY/CATCH DA NE KVARI ENTER) ---
+    // --- AUDIO CONTEXT ZA OTKLJUČAVANJE ZVUKA NA MOBITELU ---
+    let audioCtx = null;
+
     try {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (SpeechRecognition) {
@@ -55,23 +57,48 @@
             recognition.lang = 'bs-BA';
             recognition.continuous = true;
             recognition.interimResults = true;
+
             recognition.onresult = (e) => {
-                if (currentAudio) currentAudio.pause();
-                const transcript = e.results[e.results.length - 1][0].transcript;
-                userInput.value = transcript;
-                if (e.results[e.results.length - 1].isFinal) posalji();
+                let finalTranscript = '';
+                let interimTranscript = '';
+
+                for (let i = e.resultIndex; i < e.results.length; ++i) {
+                    if (e.results[i].isFinal) {
+                        finalTranscript += e.results[i][0].transcript;
+                    } else {
+                        interimTranscript += e.results[i][0].transcript;
+                    }
+                }
+
+                // Prikazujemo dok govoriš, ali NE šaljemo još
+                if (interimTranscript !== '') {
+                    userInput.value = interimTranscript;
+                }
+
+                // ŠALJEMO SAMO KADA JE REČENICA GOTOVA
+                if (finalTranscript !== '') {
+                    userInput.value = finalTranscript;
+                    posalji();
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error("SR Error:", event.error);
+                if (event.error === 'not-allowed') status.innerText = "Mikrofon blokiran!";
             };
         }
     } catch (err) { console.log("Glas nije podržan."); }
 
-    // GLAVNA FUNKCIJA ZA SLANJE
     async function posalji() {
         const tekst = userInput.value.trim();
         if (!tekst) return;
 
-        if (currentAudio) currentAudio.pause();
+        // Zaustavi zvuk ako AI već priča dok ti šalješ novu poruku
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+        }
 
-        // Prikaži user poruku
         const uDiv = document.createElement('div');
         uDiv.className = 'msg user';
         uDiv.innerText = tekst;
@@ -89,6 +116,12 @@
             });
             const data = await res.json();
 
+            // Ako funkcija vrati "skip", ignorišemo (to je filter protiv duplikata)
+            if (data.skip) {
+                status.innerText = "Spreman";
+                return;
+            }
+
             if (data.tekst) {
                 const aiDiv = document.createElement('div');
                 aiDiv.className = 'msg ai';
@@ -98,20 +131,29 @@
 
                 if (data.audio) {
                     status.innerText = "AI priča...";
-                    currentAudio = new Audio("data:audio/mpeg;base64," + data.audio);
-                    currentAudio.play();
+                    // PRAVILAN FORMAT ZA MOBITELE:
+                    const audioSrc = "data:audio/mpeg;base64," + data.audio;
+                    currentAudio = new Audio(audioSrc);
+                    
+                    // Forsiranje puštanja na mobitelu
+                    currentAudio.play().catch(e => {
+                        console.log("Audio play blocked, needs user interaction", e);
+                        status.innerText = "Klikni za zvuk";
+                    });
+
+                    currentAudio.onended = () => {
+                        status.innerText = "Spreman";
+                    };
                 }
             }
-            status.innerText = "Spreman";
         } catch (e) {
-            status.innerText = "Greška!";
+            console.error(e);
+            status.innerText = "Greška u konekciji!";
         }
     }
 
-    // KLIK NA DUGME POŠALJI
     sendBtn.onclick = posalji;
 
-    // ENTER TASTER
     userInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -119,43 +161,40 @@
         }
     });
 
-    // GLASOVNO DUGME
-    // Koristimo 'click' jer pokriva i mobitele i desktop bolje nego onclick
-callBtn.addEventListener('click', function() {
-    // Inicijalizacija audio konteksta (bitno za iOS/Android)
-    if (window.AudioContext || window.webkitAudioContext) {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    callBtn.addEventListener('click', function() {
+        // OTKLJUČAVANJE AUDIO SISTEMA (OBAVEZNO ZA IPHONE/ANDROID)
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
         if (audioCtx.state === 'suspended') {
             audioCtx.resume();
         }
-    }
 
-    if (!recognition) {
-        alert("Pretraživač ne podržava glas.");
-        return;
-    }
-
-    if (!isCalling) {
-        isCalling = true;
-        status.innerText = "Slušam...";
-        callBtn.style.background = "#ef4444";
-        callBtn.innerText = "STOP";
-        
-        // Na mobitelu recognition zna puknuti ako se ne pokrene unutar click eventa
-        try {
-            recognition.start();
-        } catch(e) {
-            console.log("Recognition već radi");
+        if (!recognition) {
+            alert("Pretraživač ne podržava glas.");
+            return;
         }
-    } else {
-        isCalling = false;
-        status.innerText = "Spreman";
-        callBtn.style.background = "#1e293b";
-        callBtn.innerText = "POKRENI GLASOVNO";
-        recognition.stop();
-        if (currentAudio) currentAudio.pause();
-    }
-});
+
+        if (!isCalling) {
+            isCalling = true;
+            status.innerText = "Slušam...";
+            callBtn.style.background = "#ef4444";
+            callBtn.innerText = "STOP (SLUŠAM)";
+            
+            try {
+                recognition.start();
+            } catch(e) {
+                console.log("Recognition već radi");
+            }
+        } else {
+            isCalling = false;
+            status.innerText = "Spreman";
+            callBtn.style.background = "#1e293b";
+            callBtn.innerText = "POKRENI GLASOVNO";
+            recognition.stop();
+            if (currentAudio) currentAudio.pause();
+        }
+    });
 </script>
 </body>
 </html>
