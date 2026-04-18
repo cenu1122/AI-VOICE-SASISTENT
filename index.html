@@ -37,164 +37,229 @@
 </div>
 
 <script>
+    // --- OVDJE STAVI SVOJ URL ---
+    const URL_FUNKCIJE = 'https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent'; 
+
     const chatWindow = document.getElementById('chat-window');
     const userInput = document.getElementById('userInput');
     const sendBtn = document.getElementById('sendBtn');
     const callBtn = document.getElementById('callBtn');
     const status = document.getElementById('status');
 
-    let isCalling = false;
     let currentAudio = null;
-    let recognition = null;
+    let isCalling = false;
 
-    // --- AUDIO CONTEXT ZA OTKLJUČAVANJE ZVUKA NA MOBITELU ---
-    let audioCtx = null;
+    // Funkcija za prikaz poruka
+    function addMsg(text, type) {
+        const div = document.createElement('div');
+        div.className = 'msg ' + type;
+        div.innerText = text;
+        chatWindow.appendChild(div);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
 
-    try {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SpeechRecognition) {
-            recognition = new SpeechRecognition();
-            recognition.lang = 'bs-BA';
-            recognition.continuous = true;
-            recognition.interimResults = true;
-
-            recognition.onresult = (e) => {
-                let finalTranscript = '';
-                let interimTranscript = '';
-
-                for (let i = e.resultIndex; i < e.results.length; ++i) {
-                    if (e.results[i].isFinal) {
-                        finalTranscript += e.results[i][0].transcript;
-                    } else {
-                        interimTranscript += e.results[i][0].transcript;
-                    }
-                }
-
-                // Prikazujemo dok govoriš, ali NE šaljemo još
-                if (interimTranscript !== '') {
-                    userInput.value = interimTranscript;
-                }
-
-                // ŠALJEMO SAMO KADA JE REČENICA GOTOVA
-                if (finalTranscript !== '') {
-                    userInput.value = finalTranscript;
-                    posalji();
-                }
-            };
-
-            recognition.onerror = (event) => {
-                console.error("SR Error:", event.error);
-                if (event.error === 'not-allowed') status.innerText = "Mikrofon blokiran!";
-            };
-        }
-    } catch (err) { console.log("Glas nije podržan."); }
-
-    async function posalji() {
-        const tekst = userInput.value.trim();
+    // GLAVNA FUNKCIJA
+    async function posalji(tekstManual) {
+        const tekst = tekstManual || userInput.value.trim();
         if (!tekst) return;
 
-        // Zaustavi zvuk ako AI već priča dok ti šalješ novu poruku
-        if (currentAudio) {
-            currentAudio.pause();
-            currentAudio = null;
-        }
-
-        const uDiv = document.createElement('div');
-        uDiv.className = 'msg user';
-        uDiv.innerText = tekst;
-        chatWindow.appendChild(uDiv);
-        
+        console.log("Šaljem poruku:", tekst);
+        addMsg(tekst, 'user');
         userInput.value = "";
-        chatWindow.scrollTop = chatWindow.scrollHeight;
         status.innerText = "Razmišljam...";
 
         try {
-            const res = await fetch('https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent', {
+            const res = await fetch(URL_FUNKCIJE, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userText: tekst })
             });
-            const data = await res.json();
 
-            // Ako funkcija vrati "skip", ignorišemo (to je filter protiv duplikata)
-            if (data.skip) {
-                status.innerText = "Spreman";
-                return;
-            }
+            console.log("Status odgovora:", res.status);
+            const data = await res.json();
+            console.log("Podaci stigli:", data);
 
             if (data.tekst) {
-                const aiDiv = document.createElement('div');
-                aiDiv.className = 'msg ai';
-                aiDiv.innerText = data.tekst;
-                chatWindow.appendChild(aiDiv);
-                chatWindow.scrollTop = chatWindow.scrollHeight;
-
+                addMsg(data.tekst, 'ai');
                 if (data.audio) {
-                    status.innerText = "AI priča...";
-                    // PRAVILAN FORMAT ZA MOBITELE:
-                    const audioSrc = "data:audio/mpeg;base64," + data.audio;
-                    currentAudio = new Audio(audioSrc);
-                    
-                    // Forsiranje puštanja na mobitelu
-                    currentAudio.play().catch(e => {
-                        console.log("Audio play blocked, needs user interaction", e);
-                        status.innerText = "Klikni za zvuk";
-                    });
-
-                    currentAudio.onended = () => {
-                        status.innerText = "Spreman";
-                    };
+                    if (currentAudio) currentAudio.pause();
+                    currentAudio = new Audio("data:audio/mpeg;base64," + data.audio);
+                    currentAudio.play().catch(e => console.log("Audio block:", e));
                 }
             }
-        } catch (e) {
-            console.error(e);
-            status.innerText = "Greška u konekciji!";
+            status.innerText = "Spreman";
+        } catch (err) {
+            console.error("GREŠKA:", err);
+            status.innerText = "Greška!";
         }
     }
 
-    sendBtn.onclick = posalji;
+    // ENTER Taster
+    userInput.onkeydown = (e) => { if(e.key === 'Enter') posalji(); };
+    sendBtn.onclick = () => posalji();
 
-    userInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            posalji();
-        }
-    });
-
-    callBtn.addEventListener('click', function() {
-        // OTKLJUČAVANJE AUDIO SISTEMA (OBAVEZNO ZA IPHONE/ANDROID)
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
-
-        if (!recognition) {
-            alert("Pretraživač ne podržava glas.");
-            return;
-        }
-
-        if (!isCalling) {
-            isCalling = true;
-            status.innerText = "Slušam...";
-            callBtn.style.background = "#ef4444";
-            callBtn.innerText = "STOP (SLUŠAM)";
-            
-            try {
-                recognition.start();
-            } catch(e) {
-                console.log("Recognition već radi");
+    // GLASOVNO
+    try {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const rec = new SpeechRecognition();
+        rec.lang = 'bs-BA';
+        rec.onresult = (e) => {
+            const tr = e.results[e.results.length - 1][0].transcript;
+            if (e.results[e.results.length - 1].isFinal) {
+                console.log("Glas završen:", tr);
+                posalji(tr);
             }
-        } else {
-            isCalling = false;
+        };
+
+        callBtn.onclick = () => {
+            if (!isCalling) {
+                rec.start();
+                isCalling = true;
+                callBtn.innerText = "STOP";
+                callBtn.style.background = "red";
+                status.innerText = "Slušam...";
+            } else {
+                rec.stop();
+                isCalling = false;
+                callBtn.innerText = "POKRENI GLASOVNO";
+                callBtn.style.background = "#1e293b";
+                status.innerText = "Spreman";
+            }
+        };
+    } catch(e) { console.log("SR nije podržan"); }
+
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="bs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NH AI-Automation</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .app-container { background: white; width: 100%; max-width: 400px; height: 680px; border-radius: 30px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        .header { background: #1e293b; color: white; padding: 20px; text-align: center; }
+        #chat-window { flex-grow: 1; padding: 20px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 12px; }
+        .msg { padding: 12px 16px; border-radius: 18px; font-size: 14px; max-width: 80%; line-height: 1.4; }
+        .user { background: #1e293b; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .ai { background: #2563eb; color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .input-area { padding: 20px; background: white; border-top: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 8px; }
+        input { width: 100%; padding: 14px; border: 2px solid #f1f5f9; border-radius: 12px; box-sizing: border-box; outline: none; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        #sendBtn { background: #2563eb; color: white; }
+        #callBtn { background: #1e293b; color: white; }
+        #status { font-size: 10px; text-align: center; color: #94a3b8; padding: 5px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <h3 style="margin:0">NH AI-Automation</h3>
+        <small style="opacity: 0.7">Nusret Halilović AI</small>
+    </div>
+    <div id="chat-window"></div>
+    <div id="status">Spreman</div>
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="Upiši poruku..." autocomplete="off">
+        <button id="sendBtn">POŠALJI PORUKU (ENTER)</button>
+        <button id="callBtn">POKRENI GLASOVNO</button>
+    </div>
+</div>
+
+<script>
+    // --- OVDJE STAVI SVOJ URL ---
+    const URL_FUNKCIJE = 'https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent'; 
+
+    const chatWindow = document.getElementById('chat-window');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const callBtn = document.getElementById('callBtn');
+    const status = document.getElementById('status');
+
+    let currentAudio = null;
+    let isCalling = false;
+
+    // Funkcija za prikaz poruka
+    function addMsg(text, type) {
+        const div = document.createElement('div');
+        div.className = 'msg ' + type;
+        div.innerText = text;
+        chatWindow.appendChild(div);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    // GLAVNA FUNKCIJA
+    async function posalji(tekstManual) {
+        const tekst = tekstManual || userInput.value.trim();
+        if (!tekst) return;
+
+        console.log("Šaljem poruku:", tekst);
+        addMsg(tekst, 'user');
+        userInput.value = "";
+        status.innerText = "Razmišljam...";
+
+        try {
+            const res = await fetch(URL_FUNKCIJE, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userText: tekst })
+            });
+
+            console.log("Status odgovora:", res.status);
+            const data = await res.json();
+            console.log("Podaci stigli:", data);
+
+            if (data.tekst) {
+                addMsg(data.tekst, 'ai');
+                if (data.audio) {
+                    if (currentAudio) currentAudio.pause();
+                    currentAudio = new Audio("data:audio/mpeg;base64," + data.audio);
+                    currentAudio.play().catch(e => console.log("Audio block:", e));
+                }
+            }
             status.innerText = "Spreman";
-            callBtn.style.background = "#1e293b";
-            callBtn.innerText = "POKRENI GLASOVNO";
-            recognition.stop();
-            if (currentAudio) currentAudio.pause();
+        } catch (err) {
+            console.error("GREŠKA:", err);
+            status.innerText = "Greška!";
         }
-    });
+    }
+
+    // ENTER Taster
+    userInput.onkeydown = (e) => { if(e.key === 'Enter') posalji(); };
+    sendBtn.onclick = () => posalji();
+
+    // GLASOVNO
+    try {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const rec = new SpeechRecognition();
+        rec.lang = 'bs-BA';
+        rec.onresult = (e) => {
+            const tr = e.results[e.results.length - 1][0].transcript;
+            if (e.results[e.results.length - 1].isFinal) {
+                console.log("Glas završen:", tr);
+                posalji(tr);
+            }
+        };
+
+        callBtn.onclick = () => {
+            if (!isCalling) {
+                rec.start();
+                isCalling = true;
+                callBtn.innerText = "STOP";
+                callBtn.style.background = "red";
+                status.innerText = "Slušam...";
+            } else {
+                rec.stop();
+                isCalling = false;
+                callBtn.innerText = "POKRENI GLASOVNO";
+                callBtn.style.background = "#1e293b";
+                status.innerText = "Spreman";
+            }
+        };
+    } catch(e) { console.log("SR nije podržan"); }
+
 </script>
 </body>
 </html>
