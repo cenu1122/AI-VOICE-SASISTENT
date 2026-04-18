@@ -37,6 +37,7 @@
 </div>
 
 <script>
+    // --- TVOJ URL ---
     const URL_FUNKCIJE = 'https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent'; 
 
     const chatWindow = document.getElementById('chat-window');
@@ -45,7 +46,6 @@
     const callBtn = document.getElementById('callBtn');
     const status = document.getElementById('status');
 
-    let currentAudio = null;
     let isCalling = false;
 
     function addMsg(text, type) {
@@ -54,6 +54,23 @@
         div.innerText = text;
         chatWindow.appendChild(div);
         chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    // Besplatni Google glas (Web Speech API)
+    function progovori(tekst) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel(); // Prekini prethodni govor
+            const msg = new SpeechSynthesisUtterance(tekst);
+            msg.lang = 'bs-BA'; 
+            msg.rate = 1.0;
+            
+            // Pokušaj naći najbolji glas (Hrvatski/Srpski/Bosanski su slični AI-u)
+            const voices = window.speechSynthesis.getVoices();
+            const preferredVoice = voices.find(v => v.lang.includes('hr') || v.lang.includes('sr') || v.lang.includes('bs'));
+            if (preferredVoice) msg.voice = preferredVoice;
+
+            window.speechSynthesis.speak(msg);
+        }
     }
 
     async function posalji(tekstManual) {
@@ -75,35 +92,26 @@
 
             if (data.tekst) {
                 addMsg(data.tekst, 'ai');
-                if (data.audio) {
-                    if (currentAudio) currentAudio.pause();
-                    currentAudio = new Audio("data:audio/mpeg;base64," + data.audio);
-                    currentAudio.play().catch(e => console.error("Audio error:", e));
-                }
+                progovori(data.tekst);
             }
             status.innerText = "Spreman";
         } catch (err) {
-            console.error("GREŠKA:", err);
-            status.innerText = "Greška!";
+            console.error("Greška:", err);
+            status.innerText = "Greška u konekciji!";
         }
     }
 
     userInput.onkeydown = (e) => { if(e.key === 'Enter') posalji(); };
     sendBtn.onclick = () => posalji();
 
-    // GLASOVNO PREPOZNAVANJE - Očišćena verzija
+    // Prepoznavanje glasa
     try {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) throw new Error("Browser ne podržava SpeechRecognition");
-
         const rec = new SpeechRecognition();
         rec.lang = 'bs-BA';
-        rec.continuous = false;
-        rec.interimResults = false;
 
         rec.onresult = (e) => {
             const tr = e.results[0][0].transcript;
-            console.log("Glas prepoznat:", tr);
             posalji(tr);
         };
 
@@ -111,26 +119,22 @@
             isCalling = false;
             callBtn.innerText = "POKRENI GLASOVNO";
             callBtn.style.background = "#1e293b";
-            if(status.innerText === "Slušam...") status.innerText = "Spreman";
         };
 
         callBtn.onclick = () => {
             if (!isCalling) {
-                if (currentAudio) currentAudio.pause();
-                try {
-                    rec.start();
-                    isCalling = true;
-                    callBtn.innerText = "SLUŠAM...";
-                    callBtn.style.background = "red";
-                    status.innerText = "Slušam...";
-                } catch (e) { console.error("Start error:", e); }
+                window.speechSynthesis.cancel();
+                rec.start();
+                isCalling = true;
+                callBtn.innerText = "SLUŠAM...";
+                callBtn.style.background = "red";
+                status.innerText = "Slušam...";
             } else {
                 rec.stop();
             }
         };
-    } catch(e) { 
-        console.log("SR Error:", e);
-        status.innerText = "Glas nije podržan.";
+    } catch(e) {
+        status.innerText = "Glasovne funkcije nisu podržane.";
     }
 </script>
 </body>
