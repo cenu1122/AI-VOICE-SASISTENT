@@ -1,1 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Voice Solutions | Noo-sret</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #0f172a; color: #f1f5f9; font-family: 'Inter', sans-serif; }
+        .ai-gradient { background: linear-gradient(135deg, #0f172a 0%, #431407 100%); }
+        .orange-glow { box-shadow: 0 0 20px rgba(249, 115, 22, 0.2); }
+        .hidden-lang { display: none; }
+    </style>
+</head>
+<body class="ai-gradient">
 
+    <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto">
+        <a href="index.html" class="text-xl font-bold uppercase tracking-widest"><i class="fas fa-arrow-left mr-2 text-sm"></i> Noo-sret<span class="text-orange-500">.</span></a>
+        
+        <div class="flex items-center space-x-4">
+            <div class="flex bg-slate-800 rounded-md p-1 text-xs font-bold">
+                <span onclick="setLang('en')" class="cursor-pointer px-2 py-1 rounded hover:bg-orange-500 transition">EN</span>
+                <span onclick="setLang('de')" class="cursor-pointer px-2 py-1 rounded hover:bg-orange-500 transition">DE</span>
+                <span onclick="setLang('bs')" class="cursor-pointer px-2 py-1 rounded hover:bg-orange-500 transition">BS</span>
+            </div>
+        </div>
+    </nav>
+
+    <header class="max-w-7xl mx-auto px-6 py-16 text-center">
+        <div class="inline-block px-4 py-1 border border-orange-500/50 rounded-full text-orange-400 text-sm font-mono mb-6">
+            Live Demo: Groq + Llama 3.3
+        </div>
+        <h1 class="text-4xl md:text-6xl font-black mb-6">
+            <span class="lang-en">Next-Gen <span class="text-orange-500">Voice</span> AI</span>
+            <span class="lang-de hidden-lang">KI-Sprachassistenten <span class="text-orange-500">der Zukunft</span></span>
+            <span class="lang-bs hidden-lang">Nova Generacija <span class="text-orange-500">AI Glasovnih</span> Agenta</span>
+        </h1>
+        <p class="text-xl text-gray-400 max-w-3xl mx-auto">
+            <span class="lang-en">Ultra-low latency conversational agents that handle leads, appointments, and support with human-like precision.</span>
+            <span class="lang-de hidden-lang">Gesprächskontakte mit extrem niedriger Latenz, die Leads und Termine mit menschlicher Präzision bearbeiten.</span>
+            <span class="lang-bs hidden-lang">Agenti sa ultra-niskim kašnjenjem koji obrađuju upite, zakazuju termine i pružaju podršku poput ljudi.</span>
+        </p>
+    </header>
+
+    <section class="max-w-7xl mx-auto px-6 py-12">
+        <div class="grid md:grid-cols-3 gap-6">
+            <div class="bg-slate-900/80 p-8 rounded-3xl border border-orange-500/20 orange-glow">
+                <i class="fas fa-bolt text-orange-500 text-3xl mb-4"></i>
+                <h3 class="text-xl font-bold mb-2">Zero Latency</h3>
+                <p class="text-gray-400 text-sm">Powered by Groq for lightning-fast responses (under 500ms).</p>
+            </div>
+            <div class="bg-slate-900/80 p-8 rounded-3xl border border-orange-500/20 orange-glow">
+                <i class="fas fa-envelope-open-text text-orange-500 text-3xl mb-4"></i>
+                <h3 class="text-xl font-bold mb-2">Lead Capture</h3>
+                <p class="text-gray-400 text-sm">Automated email collection and qualification during the call.</p>
+            </div>
+            <div class="bg-slate-900/80 p-8 rounded-3xl border border-orange-500/20 orange-glow">
+                <i class="fas fa-calendar-check text-orange-500 text-3xl mb-4"></i>
+                <h3 class="text-xl font-bold mb-2">CRM Integration</h3>
+                <p class="text-gray-400 text-sm">Seamlessly syncs with Monday.com, GoHighLevel, and more.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="max-w-5xl mx-auto px-6 py-20">
+        <div class="bg-slate-900/50 rounded-3xl p-10 border border-slate-800">
+            <h2 class="text-2xl font-bold mb-10 text-center">Technical Architecture</h2>
+            <div class="space-y-6">
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between text-sm"><span class="text-orange-400">Response Speed (LLM)</span><span>Groq / Llama 3.3</span></div>
+                    <div class="w-full bg-slate-800 h-2 rounded-full"><div class="bg-orange-500 h-2 rounded-full w-[98%]"></div></div>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between text-sm"><span class="text-orange-400">Speech Synthesis</span><span>Deepgram / Vapi</span></div>
+                    <div class="w-full bg-slate-800 h-2 rounded-full"><div class="bg-orange-500 h-2 rounded-full w-[95%]"></div></div>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between text-sm"><span class="text-orange-400">Lead Processing</span><span>Custom Python Logic</span></div>
+                    <div class="w-full bg-slate-800 h-2 rounded-full"><div class="bg-orange-500 h-2 rounded-full w-[100%]"></div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="max-w-4xl mx-auto px-6 py-20 text-center">
+        <div class="text-4xl text-orange-500/20 mb-4 font-serif">"</div>
+        <p class="text-2xl italic text-gray-300">
+            <span class="lang-en">Our AI doesn't just talk. It listens, analyzes, and converts callers into clients while you sleep.</span>
+            <span class="lang-de hidden-lang">Unsere KI spricht nicht nur. Sie hört zu, analysiert und konvertiert Anrufer in Kunden, während Sie schlafen.</span>
+            <span class="lang-bs hidden-lang">Naš AI ne samo da priča. On sluša, analizira i pretvara pozivaoce u klijente dok vi spavate.</span>
+        </p>
+    </section>
+
+    <script>
+        function setLang(lang) {
+            document.querySelectorAll('.lang-en, .lang-de, .lang-bs').forEach(el => el.classList.add('hidden-lang'));
+            document.querySelectorAll('.lang-' + lang).forEach(el => el.classList.remove('hidden-lang'));
+        }
+        setLang('en');
+    </script>
+</body>
+</html>
