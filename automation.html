@@ -1,1 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Industrial Automation | Noo-sret</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #0f172a; color: #f1f5f9; font-family: 'Inter', sans-serif; }
+        .industrial-gradient { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
+        .accent-border { border-left: 4px solid #3b82f6; }
+        .hidden-lang { display: none; }
+    </style>
+</head>
+<body>
 
+    <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto">
+        <a href="index.html" class="text-xl font-bold uppercase tracking-widest"><i class="fas fa-arrow-left mr-2 text-sm"></i> Noo-sret<span class="text-blue-500">.</span></a>
+        
+        <div class="flex items-center space-x-4">
+            <div class="flex bg-slate-800 rounded-md p-1 text-xs font-bold">
+                <span onclick="setLang('en')" class="cursor-pointer px-2 py-1 rounded hover:bg-blue-500 transition">EN</span>
+                <span onclick="setLang('de')" class="cursor-pointer px-2 py-1 rounded hover:bg-blue-500 transition">DE</span>
+                <span onclick="setLang('bs')" class="cursor-pointer px-2 py-1 rounded hover:bg-blue-500 transition">BS</span>
+            </div>
+        </div>
+    </nav>
+
+    <header class="max-w-7xl mx-auto px-6 py-16 border-b border-slate-800">
+        <h1 class="text-4xl md:text-6xl font-black mb-6">
+            <span class="lang-en">Industrial <span class="text-blue-500">Automation</span> & Maintenance</span>
+            <span class="lang-de hidden-lang">Industrie<span class="text-blue-500">automatisierung</span> & Wartung</span>
+            <span class="lang-bs hidden-lang">Industrijska <span class="text-blue-500">Automatika</span> i Održavanje</span>
+        </h1>
+        <p class="text-xl text-gray-400 max-w-3xl">
+            <span class="lang-en">Bridging the gap between mechanical hardware and intelligent software. 20+ years of floor-level engineering expertise.</span>
+            <span class="lang-de hidden-lang">Die Lücke zwischen mechanischer Hardware und intelligenter Software schließen. Über 20 Jahre Praxiserfahrung.</span>
+            <span class="lang-bs hidden-lang">Premoštavanje jaza između mašinskog hardvera i inteligentnog softvera. Preko 20 godina iskustva na terenu.</span>
+        </p>
+    </header>
+
+    <section class="max-w-7xl mx-auto px-6 py-20">
+        <div class="grid md:grid-cols-2 gap-12">
+            
+            <div class="accent-border bg-slate-800/30 p-8 rounded-r-xl">
+                <h3 class="text-2xl font-bold mb-4">
+                    <span class="lang-en text-blue-400">Predictive Maintenance</span>
+                    <span class="lang-de hidden-lang text-blue-400">Vorausschauende Wartung</span>
+                    <span class="lang-bs hidden-lang text-blue-400">Prediktivno Održavanje</span>
+                </h3>
+                <p class="text-gray-400">
+                    <span class="lang-en">I implement AI sensors and data models that predict machinery failure before it happens, saving thousands in downtime costs.</span>
+                    <span class="lang-de hidden-lang">Ich implementiere KI-Sensoren und Datenmodelle, die Maschinenausfälle vorhersagen und Ausfallkosten sparen.</span>
+                    <span class="lang-bs hidden-lang">Implementiram AI senzore i modele podataka koji predviđaju kvarove mašina prije nego što se dese, štedeći hiljade u troškovima zastoja.</span>
+                </p>
+            </div>
+
+            <div class="accent-border bg-slate-800/30 p-8 rounded-r-xl">
+                <h3 class="text-2xl font-bold mb-4">
+                    <span class="lang-en text-blue-400">Process Optimization</span>
+                    <span class="lang-de hidden-lang text-blue-400">Prozessoptimierung</span>
+                    <span class="lang-bs hidden-lang text-blue-400">Optimizacija Procesima</span>
+                </h3>
+                <p class="text-gray-400">
+                    <span class="lang-en">Streamlining production lines by integrating modern PLC controllers with real-time cloud monitoring dashboards.</span>
+                    <span class="lang-de hidden-lang">Optimierung von Produktionslinien durch Integration moderner SPS-Steuerungen mit Cloud-Monitoring-Dashboards.</span>
+                    <span class="lang-bs hidden-lang">Unapređenje proizvodnih linija integracijom modernih PLC kontrolera sa kontrolnim tablama za praćenje u stvarnom vremenu.</span>
+                </p>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-6 py-12">
+        <div class="bg-slate-900 rounded-3xl p-8 border border-slate-800">
+            <h2 class="text-3xl font-bold mb-8 text-center">Technical Expertise</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="text-blue-500 border-b border-slate-800">
+                            <th class="py-4">Category</th>
+                            <th class="py-4">Specialization</th>
+                            <th class="py-4">Platform</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-400">
+                        <tr class="border-b border-slate-800/50">
+                            <td class="py-4 font-bold text-white">Maintenance</td>
+                            <td class="py-4">Mechanical Systems & Hydraulics</td>
+                            <td class="py-4">Industrial Grade</td>
+                        </tr>
+                        <tr class="border-b border-slate-800/50">
+                            <td class="py-4 font-bold text-white">Automation</td>
+                            <td class="py-4">PLC Programming & IoT Sensors</td>
+                            <td class="py-4">Custom Integrated</td>
+                        </tr>
+                        <tr>
+                            <td class="py-4 font-bold text-white">Data</td>
+                            <td class="py-4">Real-time Analytics Dashboards</td>
+                            <td class="py-4">Cloud / On-Premise</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-6 py-20 text-center">
+        <h2 class="text-3xl font-bold mb-6">
+            <span class="lang-en">Need a technical audit?</span>
+            <span class="lang-de hidden-lang">Benötigen Sie ein technisches Audit?</span>
+            <span class="lang-bs hidden-lang">Trebate tehnički audit?</span>
+        </h2>
+        <a href="index.html#contact" class="inline-block bg-blue-600 px-10 py-4 rounded-full font-black hover:bg-blue-700 transition shadow-xl shadow-blue-500/20">
+            <span class="lang-en">Let's Discuss Your Project</span>
+            <span class="lang-de hidden-lang">Projekt besprechen</span>
+            <span class="lang-bs hidden-lang">Razgovarajmo o projektu</span>
+        </a>
+    </section>
+
+    <script>
+        function setLang(lang) {
+            document.querySelectorAll('.lang-en, .lang-de, .lang-bs').forEach(el => el.classList.add('hidden-lang'));
+            document.querySelectorAll('.lang-' + lang).forEach(el => el.classList.remove('hidden-lang'));
+        }
+        // Default
+        setLang('en');
+    </script>
+</body>
+</html>
