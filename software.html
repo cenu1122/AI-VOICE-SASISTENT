@@ -1,1 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software Development | Noo-sret</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #0f172a; color: #f1f5f9; font-family: 'Inter', sans-serif; }
+        .code-gradient { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); }
+        .tech-pill { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); padding: 4px 12px; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; color: #60a5fa; }
+        .hidden-lang { display: none; }
+    </style>
+</head>
+<body class="code-gradient">
 
+    <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto">
+        <a href="index.html" class="text-xl font-bold uppercase tracking-widest"><i class="fas fa-arrow-left mr-2 text-sm"></i> Noo-sret<span class="text-blue-500">.</span></a>
+        
+        <div class="flex items-center space-x-4">
+            <div class="flex bg-slate-800 rounded-md p-1 text-xs font-bold">
+                <span onclick="setLang('en')" class="cursor-pointer px-2 py-1 rounded hover:bg-blue-500 transition">EN</span>
+                <span onclick="setLang('de')" class="cursor-pointer px-2 py-1 rounded hover:bg-blue-500 transition">DE</span>
+                <span onclick="setLang('bs')" class="cursor-pointer px-2 py-1 rounded hover:bg-blue-500 transition">BS</span>
+            </div>
+        </div>
+    </nav>
+
+    <header class="max-w-7xl mx-auto px-6 py-16 text-center">
+        <div class="inline-block px-4 py-1 border border-blue-500/50 rounded-full text-blue-400 text-sm font-mono mb-6">
+            &lt; Full-Stack Solutions /&gt;
+        </div>
+        <h1 class="text-4xl md:text-6xl font-black mb-6">
+            <span class="lang-en">Building <span class="text-blue-500">Scalable</span> Software</span>
+            <span class="lang-de hidden-lang">Bau <span class="text-blue-500">skalierbarer</span> Software</span>
+            <span class="lang-bs hidden-lang">Izrada <span class="text-blue-500">skalabilnog</span> softvera</span>
+        </h1>
+        <p class="text-xl text-gray-400 max-w-2xl mx-auto">
+            <span class="lang-en">From native Android applications to complex web architectures. Clean code, engineered for growth.</span>
+            <span class="lang-de hidden-lang">Von nativen Android-Anwendungen bis hin zu komplexen Webarchitekturen. Sauberer Code, auf Wachstum ausgelegt.</span>
+            <span class="lang-bs hidden-lang">Od izvornih Android aplikacija do složenih web arhitektura. Čist kod, dizajniran za rast.</span>
+        </p>
+    </header>
+
+    <section class="max-w-7xl mx-auto px-6 py-12">
+        <div class="grid md:grid-cols-2 gap-8">
+            
+            <div class="bg-slate-900/50 p-8 rounded-3xl border border-slate-800 hover:border-blue-500 transition-all">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center text-blue-500 mr-4 text-2xl">
+                        <i class="fab fa-android"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold">Mobile Engineering</h3>
+                </div>
+                <p class="text-gray-400 mb-6">
+                    <span class="lang-en">Native Android development using Kotlin and Android Studio. Expertise in APK generation, Buildozer for Python integrations, and hardware-software bridges.</span>
+                    <span class="lang-de hidden-lang">Native Android-Entwicklung mit Kotlin und Android Studio. Expertise in APK-Erstellung und Hardware-Software-Schnittstellen.</span>
+                    <span class="lang-bs hidden-lang">Izvorni Android razvoj koristeći Kotlin i Android Studio. Ekspertiza u APK generisanju i povezivanju hardvera sa softverom.</span>
+                </p>
+                <div class="flex flex-wrap gap-2">
+                    <span class="tech-pill">Kotlin</span>
+                    <span class="tech-pill">Android Studio</span>
+                    <span class="tech-pill">Buildozer</span>
+                    <span class="tech-pill">Kivy</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-900/50 p-8 rounded-3xl border border-slate-800 hover:border-blue-500 transition-all">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center text-blue-500 mr-4 text-2xl">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold">Web Architecture</h3>
+                </div>
+                <p class="text-gray-400 mb-6">
+                    <span class="lang-en">Building modern web platforms and administrator stores. High-performance frontends with secure Supabase and SQL backends.</span>
+                    <span class="lang-de hidden-lang">Entwicklung moderner Webplattformen. Hochleistungs-Frontends mit sicheren Supabase- und SQL-Backends.</span>
+                    <span class="lang-bs hidden-lang">Izgradnja modernih web platformi i administratorskih prodavnica. Brzi frontend sistemi sa sigurnim Supabase i SQL bazama.</span>
+                </p>
+                <div class="flex flex-wrap gap-2">
+                    <span class="tech-pill">React</span>
+                    <span class="tech-pill">Next.js</span>
+                    <span class="tech-pill">Supabase</span>
+                    <span class="tech-pill">SQL</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="max-w-5xl mx-auto px-6 py-20 bg-blue-600/5 rounded-3xl border border-blue-500/10 my-12 text-center">
+        <h2 class="text-3xl font-bold mb-6">
+            <span class="lang-en">Site Administration & Hosting</span>
+            <span class="lang-de hidden-lang">Seitenverwaltung & Hosting</span>
+            <span class="lang-bs hidden-lang">Administracija Sajtova & Hosting</span>
+        </h2>
+        <p class="text-gray-400 mb-8 max-w-2xl mx-auto font-mono text-sm">
+            Current Managed Platforms: <br>
+            <span class="text-blue-400">aradnicieu.site</span> | <span class="text-blue-400">automatikaeu.store</span>
+        </p>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="p-4 bg-slate-900 rounded-lg border border-slate-800">Domain Mgmt</div>
+            <div class="p-4 bg-slate-900 rounded-lg border border-slate-800">SSL Security</div>
+            <div class="p-4 bg-slate-900 rounded-lg border border-slate-800">SEO Optimize</div>
+            <div class="p-4 bg-slate-900 rounded-lg border border-slate-800">API Gateway</div>
+        </div>
+    </section>
+
+    <script>
+        function setLang(lang) {
+            document.querySelectorAll('.lang-en, .lang-de, .lang-bs').forEach(el => el.classList.add('hidden-lang'));
+            document.querySelectorAll('.lang-' + lang).forEach(el => el.classList.remove('hidden-lang'));
+        }
+        setLang('en');
+    </script>
+</body>
+</html>
