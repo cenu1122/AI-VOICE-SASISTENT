@@ -1,6 +1,6 @@
-Evo ti kompletan, moderan index.html fajl. Koristio sam Tailwind CSS jer je najbrži za podešavanje i izgleda vrhunski. Dizajn je "Industrial Dark" – kombinacija tamne pozadine, inženjerske plave i "AI" narandžaste.
+Evo ti kompletan kod za glavnu stranicu (index.html). Ovaj kod je spreman za rad – sadrži integrisan Language Switcher (prebacivanje jezika), moderan "Industrial Dark" dizajn i sve tri sekcije koje si tražio.
 
-Samo kopiraj ovaj kod u svoj index.html fajl:
+Samo kopiraj sve ovo u jedan fajl koji ćeš nazvati index.html:
 HTML
 
 <!DOCTYPE html>
@@ -12,34 +12,50 @@ HTML
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { background-color: #0f172a; color: #f1f5f9; font-family: 'Inter', sans-serif; }
+        body { background-color: #0f172a; color: #f1f5f9; font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
         .gradient-text { background: linear-gradient(90deg, #3b82f6, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .card-hover:hover { transform: translateY(-5px); transition: 0.3s; border-color: #3b82f6; }
+        .card-hover:hover { transform: translateY(-5px); transition: 0.3s; border-color: #3b82f6; background-color: rgba(30, 41, 59, 0.8); }
+        .lang-btn { cursor: pointer; padding: 2px 8px; border-radius: 4px; transition: 0.2s; }
+        .lang-btn:hover { background: #3b82f6; color: white; }
+        .hidden-lang { display: none; }
     </style>
 </head>
 <body>
 
-    <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto">
+    <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto sticky top-0 bg-[#0f172a]/80 backdrop-blur-md z-50">
         <div class="text-2xl font-bold tracking-tighter uppercase tracking-widest">Noo-sret<span class="text-blue-500">.</span></div>
+        
         <div class="hidden md:flex space-x-8 font-medium text-gray-400">
             <a href="#automation" class="hover:text-white">Automation</a>
             <a href="#dev" class="hover:text-white">Software</a>
             <a href="#ai" class="hover:text-white">AI Voice</a>
         </div>
-        <a href="#contact" class="bg-blue-600 px-6 py-2 rounded-full font-bold hover:bg-blue-700 transition">Let's Talk</a>
+
+        <div class="flex items-center space-x-4">
+            <div class="flex bg-slate-800 rounded-md p-1 text-xs font-bold">
+                <span onclick="setLang('en')" class="lang-btn text-white">EN</span>
+                <span onclick="setLang('de')" class="lang-btn">DE</span>
+                <span onclick="setLang('bs')" class="lang-btn">BS</span>
+            </div>
+            <a href="#contact" class="bg-blue-600 px-5 py-2 rounded-full font-bold hover:bg-blue-700 transition text-sm">Contact</a>
+        </div>
     </nav>
 
-    <section class="max-w-7xl mx-auto px-6 py-20 text-center md:text-left flex flex-col md:flex-row items-center">
-        <div class="md:w-2/3">
+    <section class="max-w-7xl mx-auto px-6 py-20 flex flex-col md:flex-row items-center">
+        <div class="md:w-full text-center md:text-left">
             <h1 class="text-5xl md:text-7xl font-extrabold leading-tight">
-                Where <span class="gradient-text">Engineering</span> <br>Meets AI Intelligence.
+                <span class="lang-en">Where <span class="gradient-text">Engineering</span> <br>Meets AI Intelligence.</span>
+                <span class="lang-de hidden-lang">Wo <span class="gradient-text">Engineering</span> <br>auf KI-Intelligenz trifft.</span>
+                <span class="lang-bs hidden-lang">Gdje se <span class="gradient-text">Inženjering</span> <br>spaja sa AI Inteligencijom.</span>
             </h1>
-            <p class="mt-6 text-xl text-gray-400 max-w-2xl">
-                20+ years of industrial experience combined with cutting-edge AI automation. I build robust, engineered systems—not just apps.
+            <p class="mt-6 text-xl text-gray-400 max-w-2xl mx-auto md:mx-0">
+                <span class="lang-en">20+ years of industrial expertise combined with cutting-edge AI automation. I build robust, engineered systems—not just apps.</span>
+                <span class="lang-de hidden-lang">Über 20 Jahre Industrieerfahrung kombiniert mit modernster KI-Automatisierung. Ich entwickle robuste, technische Systeme – keine einfachen Apps.</span>
+                <span class="lang-bs hidden-lang">Preko 20 godina industrijskog iskustva u kombinaciji sa najmodernijom AI automatizacijom. Gradim stabilne inženjerske sisteme, a ne samo aplikacije.</span>
             </p>
             <div class="mt-10 flex space-x-4 justify-center md:justify-start">
-                <a href="#contact" class="bg-orange-500 px-8 py-4 rounded-lg font-bold text-lg hover:bg-orange-600 shadow-lg shadow-orange-500/20">Book 15-Min Call</a>
-                <a href="#automation" class="border border-gray-700 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-800">View Services</a>
+                <a href="#contact" class="bg-orange-500 px-8 py-4 rounded-lg font-bold text-lg hover:bg-orange-600 shadow-lg shadow-orange-500/20">Book a Call</a>
+                <a href="#services" class="border border-gray-700 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-800">Services</a>
             </div>
         </div>
     </section>
@@ -47,73 +63,92 @@ HTML
     <section id="services" class="max-w-7xl mx-auto px-6 py-20">
         <div class="grid md:grid-cols-3 gap-8">
             
-            <div id="automation" class="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 card-hover">
+            <div id="automation" class="bg-slate-800/40 p-8 rounded-2xl border border-slate-700 card-hover transition-all">
                 <div class="text-blue-500 text-4xl mb-4"><i class="fas fa-industry"></i></div>
-                <h3 class="text-2xl font-bold mb-4">Industrial Automation</h3>
-                <p class="text-gray-400 leading-relaxed">Predictive maintenance, process optimization, and legacy system integration. Engineered for the factory floor.</p>
-                <ul class="mt-4 text-sm text-blue-400 font-mono">
-                    <li>+ Predictive Maintenance</li>
-                    <li>+ Digital Transformation</li>
-                </ul>
+                <h3 class="text-2xl font-bold mb-4">
+                    <span class="lang-en">Industrial Automation</span>
+                    <span class="lang-de hidden-lang">Industrieautomatisierung</span>
+                    <span class="lang-bs hidden-lang">Industrijska Automatika</span>
+                </h3>
+                <p class="text-gray-400 leading-relaxed">
+                    <span class="lang-en">Predictive maintenance, process optimization, and legacy system integration. Engineered for the factory floor.</span>
+                    <span class="lang-de hidden-lang">Vorausschauende Wartung, Prozessoptimierung und Integration von Altsystemen. Entwickelt für die Produktion.</span>
+                    <span class="lang-bs hidden-lang">Prediktivno održavanje, optimizacija procesa i integracija starih sistema. Dizajnirano za fabrike.</span>
+                </p>
             </div>
 
-            <div id="dev" class="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 card-hover">
+            <div id="dev" class="bg-slate-800/40 p-8 rounded-2xl border border-slate-700 card-hover transition-all">
                 <div class="text-blue-500 text-4xl mb-4"><i class="fas fa-code"></i></div>
-                <h3 class="text-2xl font-bold mb-4">Web & Mobile Dev</h3>
-                <p class="text-gray-400 leading-relaxed">Full-stack applications using Kotlin (Android), React, and Supabase. Scalable and secure architecture.</p>
-                <ul class="mt-4 text-sm text-blue-400 font-mono">
-                    <li>+ Native Android Apps</li>
-                    <li>+ Scalable Backends</li>
-                </ul>
+                <h3 class="text-2xl font-bold mb-4">
+                    <span class="lang-en">Web & Mobile Dev</span>
+                    <span class="lang-de hidden-lang">Web- & Mobile-Entw.</span>
+                    <span class="lang-bs hidden-lang">Web & Mobile Dev</span>
+                </h3>
+                <p class="text-gray-400 leading-relaxed">
+                    <span class="lang-en">Full-stack applications using Kotlin (Android), React, and Supabase. Scalable and secure architecture.</span>
+                    <span class="lang-de hidden-lang">Full-Stack-Anwendungen mit Kotlin, React und Supabase. Skalierbare und sichere Architektur.</span>
+                    <span class="lang-bs hidden-lang">Full-stack aplikacije koristeći Kotlin, React i Supabase. Skalabilna i sigurna arhitektura.</span>
+                </p>
             </div>
 
-            <div id="ai" class="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 card-hover">
+            <div id="ai" class="bg-slate-800/40 p-8 rounded-2xl border border-slate-700 card-hover transition-all">
                 <div class="text-orange-500 text-4xl mb-4"><i class="fas fa-microphone-lines"></i></div>
-                <h3 class="text-2xl font-bold mb-4">AI Voice Agents</h3>
-                <p class="text-gray-400 leading-relaxed">Conversational AI built on Groq & Llama. Automate your leads and support with human-like agents.</p>
-                <ul class="mt-4 text-sm text-orange-400 font-mono">
-                    <li>+ 24/7 Lead Capture</li>
-                    <li>+ CRM Syncing</li>
-                </ul>
+                <h3 class="text-2xl font-bold mb-4">
+                    <span class="lang-en">AI Voice Agents</span>
+                    <span class="lang-de hidden-lang">KI-Voice-Agenten</span>
+                    <span class="lang-bs hidden-lang">AI Voice Agenti</span>
+                </h3>
+                <p class="text-gray-400 leading-relaxed">
+                    <span class="lang-en">Conversational AI built on Groq & Llama. Automate your leads and support with human-like agents.</span>
+                    <span class="lang-de hidden-lang">KI-Konversation basierend auf Groq & Llama. Automatisieren Sie Ihre Leads mit menschlichen Agenten.</span>
+                    <span class="lang-bs hidden-lang">Konverzacijska inteligencija (Groq & Llama). Automatizujte prodaju sa agentima koji zvuče kao ljudi.</span>
+                </p>
             </div>
 
-        </div>
-    </section>
-
-    <section class="bg-slate-900 py-20">
-        <div class="max-w-5xl mx-auto px-6 text-center">
-            <h2 class="text-3xl md:text-5xl font-bold mb-8">The <span class="text-blue-500">Hybrid</span> Advantage</h2>
-            <p class="text-xl text-gray-400 leading-relaxed italic">
-                "Most developers don't know how a factory works. Most engineers don't know how to build an AI. I bridge that gap with 20 years of real-world mechanical maintenance and advanced software development."
-            </p>
-            <div class="mt-8 font-bold text-white text-lg">— Noo-sret Halilović</div>
         </div>
     </section>
 
     <section id="contact" class="max-w-3xl mx-auto px-6 py-20">
         <div class="bg-blue-600/10 border border-blue-500/30 p-10 rounded-3xl">
-            <h2 class="text-3xl font-bold mb-6 text-center">Ready to Automate?</h2>
+            <h2 class="text-3xl font-bold mb-6 text-center">
+                <span class="lang-en">Ready to Automate?</span>
+                <span class="lang-de hidden-lang">Bereit zu automatisieren?</span>
+                <span class="lang-bs hidden-lang">Spremni za automatizaciju?</span>
+            </h2>
             <form class="space-y-4">
-                <input type="text" placeholder="Your Name" class="w-full p-4 rounded-lg bg-slate-800 border border-slate-700 focus:border-blue-500 outline-none">
-                <input type="email" placeholder="Your Email" class="w-full p-4 rounded-lg bg-slate-800 border border-slate-700 focus:border-blue-500 outline-none">
-                <select class="w-full p-4 rounded-lg bg-slate-800 border border-slate-700 focus:border-blue-500 outline-none">
-                    <option>Interested in: AI Automation</option>
-                    <option>Interested in: Web/Mobile Dev</option>
-                    <option>Interested in: Industrial Engineering</option>
-                </select>
-                <textarea placeholder="Message" rows="4" class="w-full p-4 rounded-lg bg-slate-800 border border-slate-700 focus:border-blue-500 outline-none"></textarea>
-                <button class="w-full bg-blue-600 py-4 rounded-lg font-bold text-lg hover:bg-blue-700 shadow-xl shadow-blue-500/20">Send Message</button>
+                <input type="text" placeholder="Name" class="w-full p-4 rounded-lg bg-slate-800 border border-slate-700 focus:border-blue-500 outline-none">
+                <input type="email" placeholder="Email" class="w-full p-4 rounded-lg bg-slate-800 border border-slate-700 focus:border-blue-500 outline-none">
+                <button class="w-full bg-blue-600 py-4 rounded-lg font-bold text-lg hover:bg-blue-700 shadow-xl shadow-blue-500/20 transition">
+                    <span class="lang-en">Send Message</span>
+                    <span class="lang-de hidden-lang">Nachricht senden</span>
+                    <span class="lang-bs hidden-lang">Pošalji poruku</span>
+                </button>
             </form>
         </div>
     </section>
 
     <footer class="p-10 text-center text-gray-500 border-t border-slate-800">
-        <p>&copy; 2026 Noo-sret Halilović. Engineered for the future.</p>
-        <div class="mt-4 space-x-6">
+        <p>&copy; 2026 Noo-sret Halilović. <span class="lang-en">Engineered for the future.</span><span class="lang-de hidden-lang">Entwickelt für die Zukunft.</span><span class="lang-bs hidden-lang">Dizajnirano za budućnost.</span></p>
+        <div class="mt-4 space-x-6 text-sm">
             <a href="https://aradnicieu.site" class="hover:text-white">aradnicieu.site</a>
             <a href="https://automatikaeu.store" class="hover:text-white">automatikaeu.store</a>
         </div>
     </footer>
+
+    <script>
+        function setLang(lang) {
+            // Hide all
+            document.querySelectorAll('.lang-en, .lang-de, .lang-bs').forEach(el => el.classList.add('hidden-lang'));
+            // Show selected
+            document.querySelectorAll('.lang-' + lang).forEach(el => el.classList.remove('hidden-lang'));
+            
+            // Highlight button
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('text-white', 'bg-blue-500'));
+            event.target.classList.add('text-white');
+        }
+        // Set default
+        setLang('en');
+    </script>
 
 </body>
 </html>
