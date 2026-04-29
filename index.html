@@ -1,141 +1,119 @@
+Evo ti kompletan, moderan index.html fajl. Koristio sam Tailwind CSS jer je najbrži za podešavanje i izgleda vrhunski. Dizajn je "Industrial Dark" – kombinacija tamne pozadine, inženjerske plave i "AI" narandžaste.
+
+Samo kopiraj ovaj kod u svoj index.html fajl:
+HTML
+
 <!DOCTYPE html>
-<html lang="bs">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NH AI-Automation</title>
+    <title>Noo-sret | Industrial AI & Software Expert</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .app-container { background: white; width: 100%; max-width: 400px; height: 680px; border-radius: 30px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
-        .header { background: #1e293b; color: white; padding: 20px; text-align: center; }
-        #chat-window { flex-grow: 1; padding: 20px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 12px; }
-        .msg { padding: 12px 16px; border-radius: 18px; font-size: 14px; max-width: 80%; line-height: 1.4; }
-        .user { background: #1e293b; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
-        .ai { background: #2563eb; color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
-        .input-area { padding: 20px; background: white; border-top: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 8px; }
-        input { width: 100%; padding: 14px; border: 2px solid #f1f5f9; border-radius: 12px; box-sizing: border-box; outline: none; }
-        button { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        #sendBtn { background: #2563eb; color: white; }
-        #callBtn { background: #1e293b; color: white; }
-        #status { font-size: 10px; text-align: center; color: #94a3b8; padding: 5px; font-weight: bold; }
+        body { background-color: #0f172a; color: #f1f5f9; font-family: 'Inter', sans-serif; }
+        .gradient-text { background: linear-gradient(90deg, #3b82f6, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .card-hover:hover { transform: translateY(-5px); transition: 0.3s; border-color: #3b82f6; }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <div class="header">
-        <h3 style="margin:0">NH AI-Automation</h3>
-        <small style="opacity: 0.7">Nusret Halilović AI</small>
-    </div>
-    <div id="chat-window"></div>
-    <div id="status">Spreman</div>
-    <div class="input-area">
-        <input type="text" id="userInput" placeholder="Upiši poruku..." autocomplete="off">
-        <button id="sendBtn">POŠALJI PORUKU (ENTER)</button>
-        <button id="callBtn">POKRENI GLASOVNO</button>
-    </div>
-</div>
+    <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto">
+        <div class="text-2xl font-bold tracking-tighter uppercase tracking-widest">Noo-sret<span class="text-blue-500">.</span></div>
+        <div class="hidden md:flex space-x-8 font-medium text-gray-400">
+            <a href="#automation" class="hover:text-white">Automation</a>
+            <a href="#dev" class="hover:text-white">Software</a>
+            <a href="#ai" class="hover:text-white">AI Voice</a>
+        </div>
+        <a href="#contact" class="bg-blue-600 px-6 py-2 rounded-full font-bold hover:bg-blue-700 transition">Let's Talk</a>
+    </nav>
 
-<script>
-    // --- TVOJ URL ---
-    const URL_FUNKCIJE = 'https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent'; 
+    <section class="max-w-7xl mx-auto px-6 py-20 text-center md:text-left flex flex-col md:flex-row items-center">
+        <div class="md:w-2/3">
+            <h1 class="text-5xl md:text-7xl font-extrabold leading-tight">
+                Where <span class="gradient-text">Engineering</span> <br>Meets AI Intelligence.
+            </h1>
+            <p class="mt-6 text-xl text-gray-400 max-w-2xl">
+                20+ years of industrial experience combined with cutting-edge AI automation. I build robust, engineered systems—not just apps.
+            </p>
+            <div class="mt-10 flex space-x-4 justify-center md:justify-start">
+                <a href="#contact" class="bg-orange-500 px-8 py-4 rounded-lg font-bold text-lg hover:bg-orange-600 shadow-lg shadow-orange-500/20">Book 15-Min Call</a>
+                <a href="#automation" class="border border-gray-700 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-800">View Services</a>
+            </div>
+        </div>
+    </section>
 
-    const chatWindow = document.getElementById('chat-window');
-    const userInput = document.getElementById('userInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const callBtn = document.getElementById('callBtn');
-    const status = document.getElementById('status');
-
-    let isCalling = false;
-
-    function addMsg(text, type) {
-        const div = document.createElement('div');
-        div.className = 'msg ' + type;
-        div.innerText = text;
-        chatWindow.appendChild(div);
-        chatWindow.scrollTop = chatWindow.scrollHeight;
-    }
-
-    // Besplatni Google glas (Web Speech API)
-    function progovori(tekst) {
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel(); // Prekini prethodni govor
-            const msg = new SpeechSynthesisUtterance(tekst);
-            msg.lang = 'bs-BA'; 
-            msg.rate = 1.0;
+    <section id="services" class="max-w-7xl mx-auto px-6 py-20">
+        <div class="grid md:grid-cols-3 gap-8">
             
-            // Pokušaj naći najbolji glas (Hrvatski/Srpski/Bosanski su slični AI-u)
-            const voices = window.speechSynthesis.getVoices();
-            const preferredVoice = voices.find(v => v.lang.includes('hr') || v.lang.includes('sr') || v.lang.includes('bs'));
-            if (preferredVoice) msg.voice = preferredVoice;
+            <div id="automation" class="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 card-hover">
+                <div class="text-blue-500 text-4xl mb-4"><i class="fas fa-industry"></i></div>
+                <h3 class="text-2xl font-bold mb-4">Industrial Automation</h3>
+                <p class="text-gray-400 leading-relaxed">Predictive maintenance, process optimization, and legacy system integration. Engineered for the factory floor.</p>
+                <ul class="mt-4 text-sm text-blue-400 font-mono">
+                    <li>+ Predictive Maintenance</li>
+                    <li>+ Digital Transformation</li>
+                </ul>
+            </div>
 
-            window.speechSynthesis.speak(msg);
-        }
-    }
+            <div id="dev" class="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 card-hover">
+                <div class="text-blue-500 text-4xl mb-4"><i class="fas fa-code"></i></div>
+                <h3 class="text-2xl font-bold mb-4">Web & Mobile Dev</h3>
+                <p class="text-gray-400 leading-relaxed">Full-stack applications using Kotlin (Android), React, and Supabase. Scalable and secure architecture.</p>
+                <ul class="mt-4 text-sm text-blue-400 font-mono">
+                    <li>+ Native Android Apps</li>
+                    <li>+ Scalable Backends</li>
+                </ul>
+            </div>
 
-    async function posalji(tekstManual) {
-        const tekst = tekstManual || userInput.value.trim();
-        if (!tekst) return;
+            <div id="ai" class="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 card-hover">
+                <div class="text-orange-500 text-4xl mb-4"><i class="fas fa-microphone-lines"></i></div>
+                <h3 class="text-2xl font-bold mb-4">AI Voice Agents</h3>
+                <p class="text-gray-400 leading-relaxed">Conversational AI built on Groq & Llama. Automate your leads and support with human-like agents.</p>
+                <ul class="mt-4 text-sm text-orange-400 font-mono">
+                    <li>+ 24/7 Lead Capture</li>
+                    <li>+ CRM Syncing</li>
+                </ul>
+            </div>
 
-        addMsg(tekst, 'user');
-        userInput.value = "";
-        status.innerText = "Razmišljam...";
+        </div>
+    </section>
 
-        try {
-            const res = await fetch(URL_FUNKCIJE, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userText: tekst })
-            });
+    <section class="bg-slate-900 py-20">
+        <div class="max-w-5xl mx-auto px-6 text-center">
+            <h2 class="text-3xl md:text-5xl font-bold mb-8">The <span class="text-blue-500">Hybrid</span> Advantage</h2>
+            <p class="text-xl text-gray-400 leading-relaxed italic">
+                "Most developers don't know how a factory works. Most engineers don't know how to build an AI. I bridge that gap with 20 years of real-world mechanical maintenance and advanced software development."
+            </p>
+            <div class="mt-8 font-bold text-white text-lg">— Noo-sret Halilović</div>
+        </div>
+    </section>
 
-            const data = await res.json();
+    <section id="contact" class="max-w-3xl mx-auto px-6 py-20">
+        <div class="bg-blue-600/10 border border-blue-500/30 p-10 rounded-3xl">
+            <h2 class="text-3xl font-bold mb-6 text-center">Ready to Automate?</h2>
+            <form class="space-y-4">
+                <input type="text" placeholder="Your Name" class="w-full p-4 rounded-lg bg-slate-800 border border-slate-700 focus:border-blue-500 outline-none">
+                <input type="email" placeholder="Your Email" class="w-full p-4 rounded-lg bg-slate-800 border border-slate-700 focus:border-blue-500 outline-none">
+                <select class="w-full p-4 rounded-lg bg-slate-800 border border-slate-700 focus:border-blue-500 outline-none">
+                    <option>Interested in: AI Automation</option>
+                    <option>Interested in: Web/Mobile Dev</option>
+                    <option>Interested in: Industrial Engineering</option>
+                </select>
+                <textarea placeholder="Message" rows="4" class="w-full p-4 rounded-lg bg-slate-800 border border-slate-700 focus:border-blue-500 outline-none"></textarea>
+                <button class="w-full bg-blue-600 py-4 rounded-lg font-bold text-lg hover:bg-blue-700 shadow-xl shadow-blue-500/20">Send Message</button>
+            </form>
+        </div>
+    </section>
 
-            if (data.tekst) {
-                addMsg(data.tekst, 'ai');
-                progovori(data.tekst);
-            }
-            status.innerText = "Spreman";
-        } catch (err) {
-            console.error("Greška:", err);
-            status.innerText = "Greška u konekciji!";
-        }
-    }
+    <footer class="p-10 text-center text-gray-500 border-t border-slate-800">
+        <p>&copy; 2026 Noo-sret Halilović. Engineered for the future.</p>
+        <div class="mt-4 space-x-6">
+            <a href="https://aradnicieu.site" class="hover:text-white">aradnicieu.site</a>
+            <a href="https://automatikaeu.store" class="hover:text-white">automatikaeu.store</a>
+        </div>
+    </footer>
 
-    userInput.onkeydown = (e) => { if(e.key === 'Enter') posalji(); };
-    sendBtn.onclick = () => posalji();
-
-    // Prepoznavanje glasa
-    try {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const rec = new SpeechRecognition();
-        rec.lang = 'bs-BA';
-
-        rec.onresult = (e) => {
-            const tr = e.results[0][0].transcript;
-            posalji(tr);
-        };
-
-        rec.onend = () => {
-            isCalling = false;
-            callBtn.innerText = "POKRENI GLASOVNO";
-            callBtn.style.background = "#1e293b";
-        };
-
-        callBtn.onclick = () => {
-            if (!isCalling) {
-                window.speechSynthesis.cancel();
-                rec.start();
-                isCalling = true;
-                callBtn.innerText = "SLUŠAM...";
-                callBtn.style.background = "red";
-                status.innerText = "Slušam...";
-            } else {
-                rec.stop();
-            }
-        };
-    } catch(e) {
-        status.innerText = "Glasovne funkcije nisu podržane.";
-    }
-</script>
 </body>
 </html>
